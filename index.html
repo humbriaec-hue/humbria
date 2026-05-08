@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- Supabase JS v2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -18,46 +17,54 @@
   --gray-300:#c8cfd9;--gray-400:#9aa3b0;--gray-500:#6b7585;--gray-700:#3a4455;
   --green:#1a9e6a;--green-bg:#e6f7f1;--red:#d63b3b;--red-bg:#fdeaea;
   --blue:#1a6fc4;--blue-bg:#e6f0fb;--amber:#d97706;--amber-bg:#fef3cd;
-  --fd:'Syne',sans-serif;
-  --fb:'DM Sans',sans-serif;
-  --fn:'DM Mono',monospace;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fn:'DM Mono',monospace;
   --r-sm:6px;--r-md:10px;--r-lg:14px;
   --sh-sm:0 1px 3px rgba(12,41,65,.08);--sh-md:0 4px 16px rgba(12,41,65,.12);
 }
-body{font-family:var(--fb);background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+html,body{height:100%;width:100%}
+body{font-family:var(--fb);background:#0c2941;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:0}
 .num{font-family:var(--fn);font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
 
-/* ── TOAST ── */
+/* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .toast-item{padding:10px 16px;border-radius:var(--r-md);font-size:12px;font-family:var(--fd);font-weight:600;color:#fff;box-shadow:var(--sh-md);animation:slideIn .25s ease;display:flex;align-items:center;gap:8px}
 .toast-ok{background:var(--green)}.toast-err{background:var(--red)}.toast-info{background:var(--navy-mid)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
-/* ── LOADER ── */
+/* LOADER */
 #global-loader{position:fixed;inset:0;background:rgba(12,41,65,.7);z-index:8888;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 #global-loader.show{display:flex}
 .loader-box{background:var(--white);border-radius:var(--r-lg);padding:28px 36px;text-align:center}
 .loader-box i{font-size:32px;color:var(--orange);animation:spin 1s linear infinite;display:block;margin-bottom:12px}
 .loader-box p{font-family:var(--fd);font-weight:700;color:var(--navy);font-size:13px}
 
-/* ── CONNECTION STATUS ── */
+/* CONN STATUS */
 #conn-status{position:fixed;top:10px;right:14px;z-index:9990;font-size:10px;font-family:var(--fd);font-weight:700;padding:4px 10px;border-radius:10px;display:flex;align-items:center;gap:5px}
 #conn-status.online{background:var(--green-bg);color:var(--green)}
 #conn-status.offline{background:var(--red-bg);color:var(--red)}
 #conn-status.connecting{background:var(--amber-bg);color:var(--amber)}
 
 /* ── LOGIN ── */
-#login-screen{width:100%;max-width:420px;background:var(--white);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
-.login-hero{background:var(--navy);padding:32px;text-align:center;position:relative;overflow:hidden}
-.login-hero::before{content:'';position:absolute;bottom:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:var(--orange-dim)}
-.login-logo-icon{width:52px;height:52px;background:var(--orange);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;color:var(--navy);margin-bottom:12px}
-.login-title{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--white);letter-spacing:-0.5px}
-.login-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px}
+#login-screen{width:100%;max-width:460px;background:var(--white);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.5)}
+.login-hero{background:var(--navy);padding:36px 32px;text-align:center;position:relative;overflow:hidden}
+.login-hero::before{content:'';position:absolute;bottom:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:var(--orange-dim)}
+.login-hero::after{content:'';position:absolute;top:-40px;left:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,165,0,0.06)}
+
+/* BUILDFLOW LOGO */
+.bf-logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:16px}
+.bf-logo-icon{width:54px;height:54px;position:relative;flex-shrink:0}
+.bf-logo-icon svg{width:100%;height:100%}
+.bf-logo-text{text-align:left}
+.bf-brand{font-family:var(--fd);font-size:26px;font-weight:800;color:var(--white);letter-spacing:-0.5px;line-height:1}
+.bf-brand span{color:var(--orange)}
+.bf-country{font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.login-sub{font-size:12px;color:rgba(255,255,255,.4);margin-top:6px}
+
 .login-body{padding:28px}
 .login-modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.mode-btn{padding:14px 10px;border:2px solid var(--gray-200);border-radius:var(--r-md);cursor:pointer;text-align:center;transition:all .2s;background:var(--white)}
+.mode-btn{padding:16px 10px;border:2px solid var(--gray-200);border-radius:var(--r-md);cursor:pointer;text-align:center;transition:all .2s;background:var(--white)}
 .mode-btn:hover,.mode-btn.selected{border-color:var(--orange);background:var(--orange-dim)}
-.mode-btn i{font-size:22px;display:block;margin-bottom:6px;color:var(--navy)}
+.mode-btn i{font-size:24px;display:block;margin-bottom:6px;color:var(--navy)}
 .mode-btn.selected i{color:var(--orange)}
 .mode-btn span{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--navy)}
 .mode-btn small{display:block;font-size:10px;color:var(--gray-400);margin-top:2px}
@@ -73,18 +80,23 @@ body{font-family:var(--fb);background:#1a1a2e;display:flex;align-items:center;ju
 .btn-login:hover{background:var(--navy-mid)}
 .pin-error{color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none}
 
-/* ── APP ── */
-#app{display:none;width:100%;max-width:1200px}
-.app-shell{display:flex;height:720px;background:var(--gray-100);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-md);border:1px solid var(--gray-200)}
-.sidebar{width:216px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden}
+/* ── APP: pantalla completa ── */
+#app{display:none;width:100vw;height:100vh;position:fixed;inset:0}
+.app-shell{display:flex;height:100vh;width:100vw;background:var(--gray-100);overflow:hidden}
+.sidebar{width:220px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden}
 .sidebar::after{content:'';position:absolute;bottom:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:var(--orange-dim);pointer-events:none}
+
+/* SIDEBAR LOGO */
 .sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sb-logo-row{display:flex;align-items:center;gap:8px}
-.sb-icon{width:30px;height:30px;background:var(--orange);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:15px;flex-shrink:0}
-.sb-brand{font-family:var(--fd);font-size:15px;font-weight:800;color:var(--white);letter-spacing:-0.3px}
+.sb-logo-row{display:flex;align-items:center;gap:10px}
+.sb-logo-icon{width:32px;height:32px;flex-shrink:0}
+.sb-logo-icon svg{width:100%;height:100%}
+.sb-brand{font-family:var(--fd);font-size:15px;font-weight:800;color:var(--white);letter-spacing:-0.3px;line-height:1}
+.sb-brand span{color:var(--orange)}
 .sb-mode-tag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;font-family:var(--fd)}
 .sb-mode-tag.ops{background:var(--blue-bg);color:var(--blue)}
 .sb-mode-tag.adm{background:var(--orange-dim2);color:var(--orange)}
+
 .nav{flex:1;padding:8px 0;overflow-y:auto}
 .nav::-webkit-scrollbar{width:0}
 .nav-sec{padding:12px 14px 4px;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--fd)}
@@ -99,8 +111,9 @@ body{font-family:var(--fb);background:#1a1a2e;display:flex;align-items:center;ju
 .sb-urole{font-size:10px;color:rgba(255,255,255,.35)}
 .sb-logout{margin-left:auto;cursor:pointer;color:rgba(255,255,255,.3);font-size:14px;transition:.15s}
 .sb-logout:hover{color:var(--red)}
-.main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--gray-50)}
-.topbar{background:var(--white);border-bottom:1px solid var(--gray-200);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--sh-sm)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--gray-50);overflow:hidden}
+.topbar{background:var(--white);border-bottom:1px solid var(--gray-200);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--sh-sm)}
 .tb-left{display:flex;align-items:center;gap:10px}
 .tb-title{font-family:var(--fd);font-size:15px;font-weight:800;color:var(--navy);letter-spacing:-0.3px}
 .bc-tag{background:var(--gray-100);border:1px solid var(--gray-200);color:var(--gray-500);font-size:11px;padding:3px 9px;border-radius:20px;cursor:pointer;transition:all .15s}
@@ -110,8 +123,10 @@ body{font-family:var(--fb);background:#1a1a2e;display:flex;align-items:center;ju
 .btn-primary:hover{background:#e69400;box-shadow:0 2px 8px rgba(255,165,0,.4)}
 .btn-ghost{background:transparent;color:var(--gray-500);border:1px solid var(--gray-200);padding:6px 11px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;transition:all .15s;font-family:var(--fd)}
 .btn-ghost:hover{border-color:var(--navy);color:var(--navy)}
+.btn-danger-sm{background:var(--red-bg);color:var(--red);border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-family:var(--fd);font-weight:700}
+.btn-edit-sm{background:var(--blue-bg);color:var(--blue);border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-family:var(--fd);font-weight:700}
 .topbar-avatar{width:29px;height:29px;border-radius:50%;background:var(--navy);color:var(--orange);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--fd)}
-.content{flex:1;overflow-y:auto;padding:16px 18px}
+.content{flex:1;overflow-y:auto;padding:18px 20px}
 .content::-webkit-scrollbar{width:4px}
 .content::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:2px}
 
@@ -120,8 +135,8 @@ body{font-family:var(--fb);background:#1a1a2e;display:flex;align-items:center;ju
 .metrics.col4{grid-template-columns:repeat(4,1fr)}
 .metrics.col3{grid-template-columns:repeat(3,1fr)}
 .metrics.col2{grid-template-columns:repeat(2,1fr)}
-.metric{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:13px 15px;box-shadow:var(--sh-sm);transition:box-shadow .2s}
-.metric:hover{box-shadow:var(--sh-md)}
+.metric{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:13px 15px;box-shadow:var(--sh-sm);transition:all .2s;cursor:default}
+.metric.clickable:hover{box-shadow:var(--sh-md);border-color:var(--orange);transform:translateY(-1px)}
 .metric-label{font-size:10px;color:var(--gray-400);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .metric-value{font-family:var(--fn);font-size:22px;font-weight:500;color:var(--navy);line-height:1;letter-spacing:-0.03em}
 .metric-value.accent{color:var(--orange)}
@@ -145,6 +160,8 @@ td{padding:8px 9px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)
 td.num-cell{font-family:var(--fn);font-size:12px;font-weight:400;letter-spacing:-0.02em}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--gray-50)}
+.act-cell{display:flex;gap:4px;align-items:center}
+
 .estado-badge{font-size:10px;padding:2px 8px;border-radius:4px;display:inline-block;font-weight:700;letter-spacing:.02em}
 .e-activo{background:var(--green-bg);color:var(--green)}
 .e-pendiente{background:var(--amber-bg);color:var(--amber)}
@@ -165,17 +182,27 @@ tr:hover td{background:var(--gray-50)}
 .form-select{padding:8px 11px;border:1px solid var(--gray-200);border-radius:var(--r-sm);font-size:12px;font-family:var(--fb);color:var(--navy);background:var(--white);outline:none;cursor:pointer}
 .form-select:focus{border-color:var(--orange)}
 textarea.form-input{resize:vertical;min-height:70px}
+.url-preview{width:52px;height:52px;border-radius:8px;border:1px solid var(--gray-200);object-fit:cover;display:none}
+.url-preview.show{display:block}
 
 /* MODAL */
 .modal-backdrop{position:fixed;inset:0;background:rgba(12,41,65,.6);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .modal-backdrop.open{display:flex}
-.modal{background:var(--white);border-radius:var(--r-lg);width:90%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal{background:var(--white);border-radius:var(--r-lg);width:90%;max-width:660px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal.wide{max-width:800px}
 .modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
 .modal-title{font-family:var(--fd);font-size:15px;font-weight:800;color:var(--navy)}
 .modal-close{cursor:pointer;color:var(--gray-400);font-size:20px;transition:.15s}
 .modal-close:hover{color:var(--red)}
 .modal-body{padding:20px}
 .modal-footer{padding:14px 20px;border-top:1px solid var(--gray-200);display:flex;gap:8px;justify-content:flex-end}
+
+/* ASSIGNMENT ROWS */
+.assign-row{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r-sm);padding:10px;margin-bottom:8px;position:relative}
+.assign-row .remove-assign{position:absolute;top:8px;right:8px;background:var(--red-bg);color:var(--red);border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.days-check{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.day-chip{padding:3px 9px;border:1.5px solid var(--gray-200);border-radius:20px;font-size:11px;cursor:pointer;transition:all .15s;font-family:var(--fd);font-weight:600;color:var(--gray-500)}
+.day-chip.selected{background:var(--orange);border-color:var(--orange);color:var(--navy)}
 
 /* GANTT */
 .gantt-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--gray-100)}
@@ -187,7 +214,8 @@ textarea.form-input{resize:vertical;min-height:70px}
 /* INVENTORY */
 .inv-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100)}
 .inv-item:last-child{border-bottom:none}
-.inv-photo{width:40px;height:40px;border-radius:8px;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.inv-photo{width:42px;height:42px;border-radius:8px;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.inv-photo img{width:100%;height:100%;object-fit:cover}
 .inv-info{flex:1}
 .inv-name{font-size:12px;font-weight:600;color:var(--navy)}
 .inv-code{font-size:10px;color:var(--orange);font-family:var(--fn);font-weight:500;letter-spacing:.03em}
@@ -196,18 +224,20 @@ textarea.form-input{resize:vertical;min-height:70px}
 .stock-low{color:var(--amber);font-weight:700;font-size:11px}
 .stock-out{color:var(--red);font-weight:700;font-size:11px}
 
-/* UPLOAD ZONE */
-.upload-zone{border:2px dashed var(--gray-300);border-radius:var(--r-md);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-50);position:relative}
-.upload-zone:hover{border-color:var(--orange);background:var(--orange-dim)}
-.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-zone i{font-size:30px;color:var(--gray-300);display:block;margin-bottom:10px}
-.upload-zone:hover i{color:var(--orange)}
-.upload-zone p{font-size:12px;color:var(--gray-400);margin-bottom:4px}
-.upload-zone span{font-size:11px;color:var(--orange);font-weight:600}
+/* PERSONAL CARD */
+.personal-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:14px;text-align:center;transition:all .2s}
+.personal-card:hover{border-color:var(--orange);box-shadow:var(--sh-md)}
+.personal-photo{width:60px;height:60px;border-radius:50%;background:var(--navy);color:var(--orange);font-family:var(--fd);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;overflow:hidden;border:2px solid var(--gray-200)}
+.personal-photo img{width:100%;height:100%;object-fit:cover}
+.personal-name{font-family:var(--fd);font-weight:700;font-size:12.5px;color:var(--navy)}
+.personal-role{font-size:11px;color:var(--gray-400);margin-top:2px}
+.personal-obra{font-size:10.5px;color:var(--orange);font-weight:600;margin-top:4px}
+.card-actions-row{display:flex;gap:4px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.btn-pdf-mini{font-size:10px;padding:3px 8px;background:var(--navy);color:var(--orange);border:none;border-radius:4px;cursor:pointer;font-family:var(--fd);font-weight:700}
 
 /* MINI CHART */
 .mini-chart{display:flex;align-items:flex-end;gap:4px;height:50px}
-.mini-bar{flex:1;border-radius:3px 3px 0 0;background:var(--orange);opacity:.4;min-height:4px;transition:height .3s}
+.mini-bar{flex:1;border-radius:3px 3px 0 0;background:var(--orange);opacity:.4;min-height:4px}
 .mini-bar.today{opacity:1}
 
 /* PRIORITY */
@@ -215,16 +245,6 @@ textarea.form-input{resize:vertical;min-height:70px}
 .p-alta{background:var(--red-bg);color:var(--red)}
 .p-media{background:var(--amber-bg);color:var(--amber)}
 .p-baja{background:var(--green-bg);color:var(--green)}
-
-/* PERSONAL CARD */
-.personal-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:14px;text-align:center;transition:all .2s;cursor:pointer}
-.personal-card:hover{border-color:var(--orange);box-shadow:var(--sh-md)}
-.personal-photo{width:56px;height:56px;border-radius:50%;background:var(--navy);color:var(--orange);font-family:var(--fd);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;overflow:hidden;border:2px solid var(--gray-200)}
-.personal-photo img{width:100%;height:100%;object-fit:cover}
-.personal-name{font-family:var(--fd);font-weight:700;font-size:12.5px;color:var(--navy)}
-.personal-role{font-size:11px;color:var(--gray-400);margin-top:2px}
-.personal-obra{font-size:10.5px;color:var(--orange);font-weight:600;margin-top:4px}
-.btn-pdf-mini{font-size:10px;padding:3px 8px;background:var(--navy);color:var(--orange);border:none;border-radius:4px;cursor:pointer;font-family:var(--fd);font-weight:700;margin-top:8px}
 
 /* INFO BOX */
 .info-box{background:var(--navy);border-radius:var(--r-md);padding:13px 16px;display:flex;align-items:center;gap:10px;margin-top:12px}
@@ -241,16 +261,30 @@ textarea.form-input{resize:vertical;min-height:70px}
 .alert-title{font-size:12px;font-weight:600;color:var(--navy)}
 .alert-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
 
-/* QUOTE */
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--gray-300);border-radius:var(--r-md);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-50);position:relative}
+.upload-zone:hover{border-color:var(--orange);background:var(--orange-dim)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone i{font-size:30px;color:var(--gray-300);display:block;margin-bottom:10px}
+.upload-zone:hover i{color:var(--orange)}
+.upload-zone p{font-size:12px;color:var(--gray-400);margin-bottom:4px}
+.upload-zone span{font-size:11px;color:var(--orange);font-weight:600}
+
+/* CALC PREVIEW */
 .iva-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-700)}
 .iva-check input{accent-color:var(--orange);width:14px;height:14px}
+.calc-preview{background:var(--gray-50);border-radius:var(--r-sm);padding:12px;margin-top:12px;display:grid;gap:8px}
+.calc-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--gray-700)}
+.calc-row strong{font-family:var(--fn);font-weight:500;color:var(--navy);font-size:13px}
+.calc-row.total-row{border-top:1px solid var(--gray-200);padding-top:8px;margin-top:4px}
+.calc-row.total-row strong{font-size:16px;color:var(--green)}
 
-/* PAYROLL FILTER BAR */
+/* FILTER BAR */
 .filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .filter-bar .form-select{font-size:11px;padding:5px 9px}
 .filter-bar .form-input{font-size:11px;padding:5px 9px;width:120px}
 
-/* TEMPLATE CARDS */
+/* TEMPLATE */
 .tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .tpl-card{border:2px solid var(--gray-200);border-radius:var(--r-md);padding:14px 12px;text-align:center;cursor:pointer;transition:all .2s;background:var(--white);position:relative}
 .tpl-card:hover{border-color:var(--orange);background:var(--orange-dim)}
@@ -263,58 +297,65 @@ textarea.form-input{resize:vertical;min-height:70px}
 .tpl-actions{display:flex;gap:5px;justify-content:center;margin-top:8px}
 .tpl-del{font-size:10px;padding:2px 7px;background:var(--red-bg);color:var(--red);border:none;border-radius:4px;cursor:pointer;font-family:var(--fd);font-weight:700}
 .tpl-set-default{font-size:10px;padding:2px 7px;background:var(--green-bg);color:var(--green);border:none;border-radius:4px;cursor:pointer;font-family:var(--fd);font-weight:700}
-
 .cloud-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:var(--blue-bg);color:var(--blue);font-family:var(--fd)}
 .cloud-tag.stored{background:var(--green-bg);color:var(--green)}
 .cloud-tag.pending{background:var(--amber-bg);color:var(--amber)}
 
-.calc-preview{background:var(--gray-50);border-radius:var(--r-sm);padding:12px;margin-top:12px;display:grid;gap:8px}
-.calc-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--gray-700)}
-.calc-row strong{font-family:var(--fn);font-weight:500;color:var(--navy);font-size:13px}
-.calc-row.total-row{border-top:1px solid var(--gray-200);padding-top:8px;margin-top:4px}
-.calc-row.total-row strong{font-size:16px;color:var(--green)}
+/* BITACORA */
+.bitacora-entry{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:14px;margin-bottom:10px;display:flex;gap:12px}
+.bitacora-photo{width:80px;height:72px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center}
+.bitacora-photo img{width:100%;height:100%;object-fit:cover}
 
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<!-- TOAST CONTAINER -->
 <div id="toast"></div>
-
-<!-- GLOBAL LOADER -->
-<div id="global-loader">
-  <div class="loader-box">
-    <i class="ti ti-loader"></i>
-    <p id="loader-msg">Conectando con Supabase…</p>
-  </div>
-</div>
-
-<!-- CONNECTION STATUS -->
-<div id="conn-status" class="connecting">
-  <i class="ti ti-cloud" style="font-size:11px"></i>
-  <span id="conn-text">Conectando…</span>
-</div>
+<div id="global-loader"><div class="loader-box"><i class="ti ti-loader"></i><p id="loader-msg">Conectando…</p></div></div>
+<div id="conn-status" class="connecting"><i class="ti ti-cloud" style="font-size:11px"></i><span id="conn-text">Conectando…</span></div>
 
 <!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <div class="login-hero">
-    <div class="login-logo-icon"><i class="ti ti-building-skyscraper"></i></div>
-    <div class="login-title">BuildFlow EC</div>
-    <div class="login-sub">Sistema de Gestión de Construcción · Ecuador</div>
+    <div class="bf-logo">
+      <!-- Logo SVG BuildFlow EC -->
+      <div class="bf-logo-icon">
+        <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="54" height="54" rx="12" fill="#ffa500"/>
+          <!-- Grúa torre -->
+          <rect x="24" y="8" width="4" height="32" rx="1.5" fill="#0c2941"/>
+          <!-- Brazo horizontal -->
+          <rect x="14" y="10" width="26" height="3.5" rx="1.5" fill="#0c2941"/>
+          <!-- Cable y gancho -->
+          <line x1="34" y1="13.5" x2="34" y2="24" stroke="#0c2941" stroke-width="1.5"/>
+          <rect x="31" y="24" width="6" height="4" rx="1" fill="#0c2941"/>
+          <!-- Edificio base -->
+          <rect x="10" y="40" width="34" height="8" rx="2" fill="#0c2941"/>
+          <!-- Ventanas edificio -->
+          <rect x="14" y="42" width="4" height="4" rx="1" fill="#ffa500" opacity="0.7"/>
+          <rect x="21" y="42" width="4" height="4" rx="1" fill="#ffa500" opacity="0.7"/>
+          <rect x="28" y="42" width="4" height="4" rx="1" fill="#ffa500" opacity="0.7"/>
+          <rect x="35" y="42" width="4" height="4" rx="1" fill="#ffa500" opacity="0.7"/>
+          <!-- Contrapeso -->
+          <rect x="14" y="8" width="8" height="5" rx="1.5" fill="#163d5e"/>
+        </svg>
+      </div>
+      <div class="bf-logo-text">
+        <div class="bf-brand">Build<span>Flow</span></div>
+        <div class="bf-country">Ecuador</div>
+      </div>
+    </div>
+    <div class="login-sub">Sistema de Gestión de Construcción</div>
   </div>
   <div class="login-body">
     <div class="pin-label" style="margin-bottom:10px">Selecciona tu modo de acceso</div>
     <div class="login-modes">
       <div class="mode-btn" id="mode-ops" onclick="selectMode('ops')">
-        <i class="ti ti-tools"></i>
-        <span>Operaciones</span>
-        <small>Campo y proyectos</small>
+        <i class="ti ti-tools"></i><span>Operaciones</span><small>Campo y proyectos</small>
       </div>
       <div class="mode-btn" id="mode-adm" onclick="selectMode('adm')">
-        <i class="ti ti-shield-lock"></i>
-        <span>Administración</span>
-        <small>Finanzas y RRHH</small>
+        <i class="ti ti-shield-lock"></i><span>Administración</span><small>Finanzas y RRHH</small>
       </div>
     </div>
     <div id="pin-section" style="display:none">
@@ -325,14 +366,10 @@ textarea.form-input{resize:vertical;min-height:70px}
         <div class="pin-dot" id="d5"></div><div class="pin-dot" id="d6"></div>
       </div>
       <div class="pin-grid">
-        <div class="pin-key" onclick="pinKey('1')">1</div>
-        <div class="pin-key" onclick="pinKey('2')">2</div>
-        <div class="pin-key" onclick="pinKey('3')">3</div>
-        <div class="pin-key" onclick="pinKey('4')">4</div>
-        <div class="pin-key" onclick="pinKey('5')">5</div>
-        <div class="pin-key" onclick="pinKey('6')">6</div>
-        <div class="pin-key" onclick="pinKey('7')">7</div>
-        <div class="pin-key" onclick="pinKey('8')">8</div>
+        <div class="pin-key" onclick="pinKey('1')">1</div><div class="pin-key" onclick="pinKey('2')">2</div>
+        <div class="pin-key" onclick="pinKey('3')">3</div><div class="pin-key" onclick="pinKey('4')">4</div>
+        <div class="pin-key" onclick="pinKey('5')">5</div><div class="pin-key" onclick="pinKey('6')">6</div>
+        <div class="pin-key" onclick="pinKey('7')">7</div><div class="pin-key" onclick="pinKey('8')">8</div>
         <div class="pin-key" onclick="pinKey('9')">9</div>
         <div class="pin-key" onclick="pinKey('0')" style="grid-column:2">0</div>
         <div class="pin-key del" onclick="pinDel()"><i class="ti ti-backspace"></i></div>
@@ -349,18 +386,30 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-row">
-        <div class="sb-icon"><i class="ti ti-building-skyscraper"></i></div>
-        <span class="sb-brand">BuildFlow EC</span>
+        <div class="sb-logo-icon">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="7" fill="#ffa500"/>
+            <rect x="14" y="4" width="3" height="20" rx="1" fill="#0c2941"/>
+            <rect x="8" y="5.5" width="16" height="2.5" rx="1" fill="#0c2941"/>
+            <line x1="21" y1="8" x2="21" y2="15" stroke="#0c2941" stroke-width="1.2"/>
+            <rect x="19" y="15" width="4" height="3" rx="0.8" fill="#0c2941"/>
+            <rect x="6" y="24" width="20" height="5" rx="1.5" fill="#0c2941"/>
+            <rect x="9" y="25.5" width="2.5" height="2.5" rx="0.5" fill="#ffa500" opacity="0.8"/>
+            <rect x="13" y="25.5" width="2.5" height="2.5" rx="0.5" fill="#ffa500" opacity="0.8"/>
+            <rect x="17" y="25.5" width="2.5" height="2.5" rx="0.5" fill="#ffa500" opacity="0.8"/>
+            <rect x="21" y="25.5" width="2.5" height="2.5" rx="0.5" fill="#ffa500" opacity="0.8"/>
+          </svg>
+        </div>
+        <div>
+          <div class="sb-brand">Build<span>Flow</span></div>
+        </div>
       </div>
       <div id="sb-mode-tag" class="sb-mode-tag ops"><i class="ti ti-tools"></i> Operaciones</div>
     </div>
     <nav class="nav" id="sidebar-nav"></nav>
     <div class="sb-user">
       <div class="sb-avatar" id="sb-avatar">JR</div>
-      <div>
-        <div class="sb-uname" id="sb-uname">J. Rodríguez</div>
-        <div class="sb-urole" id="sb-urole">Residente de obra</div>
-      </div>
+      <div><div class="sb-uname" id="sb-uname">J. Rodríguez</div><div class="sb-urole" id="sb-urole">Residente de obra</div></div>
       <i class="ti ti-logout sb-logout" onclick="doLogout()" title="Salir"></i>
     </div>
   </div>
@@ -381,17 +430,14 @@ textarea.form-input{resize:vertical;min-height:70px}
     </div>
     <div class="content" id="main-content">
       <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400)">
-        <div style="text-align:center">
-          <i class="ti ti-loader" style="font-size:32px;animation:spin 1s linear infinite;display:block;margin-bottom:12px"></i>
-          <p style="font-family:var(--fd);font-weight:700">Cargando datos…</p>
-        </div>
+        <div style="text-align:center"><i class="ti ti-loader" style="font-size:32px;animation:spin 1s linear infinite;display:block;margin-bottom:12px"></i><p style="font-family:var(--fd);font-weight:700">Cargando…</p></div>
       </div>
     </div>
   </div>
 </div>
 </div>
 
-<!-- ══ MODAL ══ -->
+<!-- MODAL -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal-box">
     <div class="modal-header">
@@ -401,69 +447,47 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer" id="modal-footer">
       <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn-primary" onclick="saveModal()">Guardar</button>
+      <button class="btn-primary" id="modal-save-btn" onclick="saveModal()">Guardar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// ⚙️  CONFIGURACIÓN SUPABASE — REEMPLAZA AQUÍ TUS CREDENCIALES
-// ══════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://ezkwfbljmltaeponvece.supabase.co/';   // ej: https://xxxx.supabase.co
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6a3dmYmxqbWx0YWVwb252ZWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjAwNzgsImV4cCI6MjA5MzgzNjA3OH0.2-vT3Rwnqsnbn6wHRsTshKeRCUjNwjavJ5AAhWBSOXc';  // tu anon/public key
-
-// ── Inicializar cliente ──
+// ══ SUPABASE CONFIG ══
+const SUPABASE_URL = 'https://ezkwfbljmltaeponvece.supabase.co/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6a3dmYmxqbWx0YWVwb252ZWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjAwNzgsImV4cCI6MjA5MzgzNjA3OH0.2-vT3Rwnqsnbn6wHRsTshKeRCUjNwjavJ5AAhWBSOXc';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ── Estado de conexión ──
 let isConnected = false;
 
 async function checkConnection() {
-  setConnStatus('connecting', 'Conectando…');
+  setConnStatus('connecting','Conectando…');
   try {
     const { error } = await db.from('projects').select('id').limit(1);
     if (error) throw error;
-    isConnected = true;
-    setConnStatus('online', 'Supabase conectado');
-  } catch (e) {
-    isConnected = false;
-    setConnStatus('offline', 'Sin conexión · modo local');
-    toast('Sin conexión a Supabase — usando datos locales', 'err');
+    isConnected = true; setConnStatus('online','Supabase conectado');
+  } catch(e) {
+    isConnected = false; setConnStatus('offline','Sin conexión · modo local');
+    toast('Sin conexión a Supabase — usando datos locales','err');
   }
 }
-
-function setConnStatus(cls, txt) {
-  const el = document.getElementById('conn-status');
-  el.className = cls;
-  document.getElementById('conn-text').textContent = txt;
+function setConnStatus(cls,txt){
+  document.getElementById('conn-status').className=cls;
+  document.getElementById('conn-text').textContent=txt;
 }
 
-// ══════════════════════════════════════════════
-// HELPERS UI
-// ══════════════════════════════════════════════
-function toast(msg, type = 'info') {
-  const c = document.getElementById('toast');
-  const d = document.createElement('div');
-  d.className = `toast-item toast-${type}`;
-  const icon = type==='ok'?'ti-check':type==='err'?'ti-alert-triangle':'ti-info-circle';
-  d.innerHTML = `<i class="ti ${icon}" style="font-size:13px"></i> ${msg}`;
-  c.appendChild(d);
-  setTimeout(() => d.remove(), 3200);
+// ── UI HELPERS ──
+function toast(msg,type='info'){
+  const c=document.getElementById('toast');const d=document.createElement('div');
+  d.className=`toast-item toast-${type}`;
+  const icon=type==='ok'?'ti-check':type==='err'?'ti-alert-triangle':'ti-info-circle';
+  d.innerHTML=`<i class="ti ${icon}" style="font-size:13px"></i> ${msg}`;
+  c.appendChild(d);setTimeout(()=>d.remove(),3200);
 }
+function showLoader(msg='Guardando…'){document.getElementById('loader-msg').textContent=msg;document.getElementById('global-loader').classList.add('show');}
+function hideLoader(){document.getElementById('global-loader').classList.remove('show');}
 
-function showLoader(msg = 'Guardando…') {
-  document.getElementById('loader-msg').textContent = msg;
-  document.getElementById('global-loader').classList.add('show');
-}
-function hideLoader() {
-  document.getElementById('global-loader').classList.remove('show');
-}
-
-// ══════════════════════════════════════════════
-// DATOS LOCALES (fallback y caché en memoria)
-// ══════════════════════════════════════════════
+// ── LOCAL DATA ──
 const LOCAL = {
   projects:[
     {id:'P001',name:'Torre Central',type:'Residencial',responsible:'Ing. Morales',progress:78,deadline:'2026-06-30',status:'activo',location:'Guayaquil, Piso 8',budget:1720000},
@@ -472,19 +496,19 @@ const LOCAL = {
     {id:'P004',name:'CC Urdesa',type:'Comercial',responsible:'Ing. Ponce',progress:23,deadline:'2026-12-20',status:'activo',location:'Guayaquil, Urdesa',budget:2100000},
   ],
   tasks:[
-    {id:'T001',name:'Inspección losa piso 7',project:'P001',responsible:'Morales',due:'Hoy',priority:'alta',status:'completado'},
-    {id:'T002',name:'Revisión instalación eléctrica',project:'P001',responsible:'Guerrero',due:'Hoy',priority:'alta',status:'pendiente'},
-    {id:'T003',name:'Despacho cemento — 20 tn',project:'P002',responsible:'Vera',due:'Mañana',priority:'media',status:'pendiente'},
-    {id:'T004',name:'Firmar planos aprobados',project:'P004',responsible:'Ponce',due:'9 may',priority:'media',status:'pendiente'},
-    {id:'T005',name:'Reunión proveedor acero',project:'P001',responsible:'Morales',due:'10 may',priority:'baja',status:'activo'},
-    {id:'T006',name:'Replanteo niveles P9',project:'P001',responsible:'Castillo',due:'12 may',priority:'alta',status:'pendiente'},
-    {id:'T007',name:'Encofrado piso 8 — sector B',project:'P001',responsible:'Morales',due:'14 may',priority:'alta',status:'pendiente'},
+    {id:'T001',name:'Inspección losa piso 7',project:'P001',responsible:'Morales',due:'2026-05-08',priority:'alta',status:'completado'},
+    {id:'T002',name:'Revisión instalación eléctrica',project:'P001',responsible:'Guerrero',due:'2026-05-08',priority:'alta',status:'pendiente'},
+    {id:'T003',name:'Despacho cemento — 20 tn',project:'P002',responsible:'Vera',due:'2026-05-09',priority:'media',status:'pendiente'},
+    {id:'T004',name:'Firmar planos aprobados',project:'P004',responsible:'Ponce',due:'2026-05-09',priority:'media',status:'pendiente'},
+    {id:'T005',name:'Reunión proveedor acero',project:'P001',responsible:'Morales',due:'2026-05-10',priority:'baja',status:'activo'},
+    {id:'T006',name:'Replanteo niveles P9',project:'P001',responsible:'Castillo',due:'2026-05-12',priority:'alta',status:'pendiente'},
+    {id:'T007',name:'Encofrado piso 8 — sector B',project:'P001',responsible:'Morales',due:'2026-05-14',priority:'alta',status:'pendiente'},
   ],
   payroll:[
-    {id:'ROL-001',period:'Mayo 2026',project:'P001',name:'Ing. R. Morales',role:'Residente de obra',hourly_rate:18.75,hours_reg:160,hours_extra50:8,hours_extra100:0,gross_reg:3000,gross_e50:225,gross_e100:0,gross_total:3225,iess:305.02,net:3188.73,status:'pendiente'},
-    {id:'ROL-002',period:'Mayo 2026',project:'P001',name:'Téc. L. Guerrero',role:'Electricista jefe',hourly_rate:11.25,hours_reg:160,hours_extra50:0,hours_extra100:0,gross_reg:1800,gross_e50:0,gross_e100:0,gross_total:1800,iess:170.1,net:1779.9,status:'pagado'},
-    {id:'ROL-003',period:'Mayo 2026',project:'P002',name:'Arq. G. Vera',role:'Supervisora',hourly_rate:15,hours_reg:144,hours_extra50:0,hours_extra100:0,gross_reg:2160,gross_e50:0,gross_e100:0,gross_total:2160,iess:204.12,net:2135.88,status:'pendiente'},
-    {id:'ROL-004',period:'Mayo 2026',project:'P003',name:'Ing. P. Castillo',role:'Maestro mayor',hourly_rate:9,hours_reg:176,hours_extra50:16,hours_extra100:8,gross_reg:1584,gross_e50:216,gross_e100:144,gross_total:1944,iess:183.71,net:1922.29,status:'pagado'},
+    {id:'ROL-001',period:'Mayo 2026',project:'P001',name:'Ing. R. Morales',role:'Residente de obra',hourly_rate:18.75,hours_reg:160,hours_extra50:8,hours_extra100:0,gross_reg:3000,gross_e50:225,gross_e100:0,gross_total:3225,iess_pct:0.0945,iess:305.02,net:3188.73,status:'pendiente'},
+    {id:'ROL-002',period:'Mayo 2026',project:'P001',name:'Téc. L. Guerrero',role:'Electricista jefe',hourly_rate:11.25,hours_reg:160,hours_extra50:0,hours_extra100:0,gross_reg:1800,gross_e50:0,gross_e100:0,gross_total:1800,iess_pct:0.0945,iess:170.1,net:1779.9,status:'pagado'},
+    {id:'ROL-003',period:'Mayo 2026',project:'P002',name:'Arq. G. Vera',role:'Supervisora',hourly_rate:15,hours_reg:144,hours_extra50:0,hours_extra100:0,gross_reg:2160,gross_e50:0,gross_e100:0,gross_total:2160,iess_pct:0.0945,iess:204.12,net:2135.88,status:'pendiente'},
+    {id:'ROL-004',period:'Mayo 2026',project:'P003',name:'Ing. P. Castillo',role:'Maestro mayor',hourly_rate:9,hours_reg:176,hours_extra50:16,hours_extra100:8,gross_reg:1584,gross_e50:216,gross_e100:144,gross_total:1944,iess_pct:0.0945,iess:183.71,net:1922.29,status:'pagado'},
   ],
   expenses:[
     {id:'GAS-0041',description:'Cemento Portland 40 sacos',category:'Materiales',project:'P001',invoice:'001-001-000123',subtotal:840,iva_applied:true,iva:126,total:966,date:'2026-05-05',status:'aprobado'},
@@ -493,21 +517,28 @@ const LOCAL = {
     {id:'GAS-0044',description:'Alquiler andamios',category:'Equipos',project:'P004',invoice:'001-002-000089',subtotal:450,iva_applied:true,iva:67.5,total:517.5,date:'2026-05-07',status:'aprobado'},
   ],
   inventory:[
-    {id:'INV-A001',name:'Amoladora angular 9"',category:'Equipo',qty:4,project:'P001',date_from:'2026-04-01',status:'ok'},
-    {id:'INV-A002',name:'Mezcladora de concreto 150L',category:'Equipo',qty:2,project:'P001',date_from:'2026-03-15',status:'ok'},
-    {id:'INV-M001',name:'Cemento Portland 50kg',category:'Material',qty:340,project:'P001',date_from:'2026-05-02',status:'ok'},
-    {id:'INV-M002',name:'Varillas corrugadas #16',category:'Material',qty:120,project:'P002',date_from:'2026-04-20',status:'low'},
-    {id:'INV-E001',name:'Cable THW #12 — rollo 100m',category:'Eléctrico',qty:0,project:null,date_from:'—',status:'out'},
+    {id:'INV-A001',name:'Amoladora angular 9"',category:'Equipo',qty:4,project:'P001',date_from:'2026-04-01',status:'ok',photo_url:null},
+    {id:'INV-A002',name:'Mezcladora de concreto 150L',category:'Equipo',qty:2,project:'P001',date_from:'2026-03-15',status:'ok',photo_url:null},
+    {id:'INV-M001',name:'Cemento Portland 50kg',category:'Material',qty:340,project:'P001',date_from:'2026-05-02',status:'ok',photo_url:null},
+    {id:'INV-M002',name:'Varillas corrugadas #16',category:'Material',qty:120,project:'P002',date_from:'2026-04-20',status:'low',photo_url:null},
+    {id:'INV-E001',name:'Cable THW #12 — rollo 100m',category:'Eléctrico',qty:0,project:null,date_from:'—',status:'out',photo_url:null},
   ],
   staff:[
-    {id:'PER-001',name:'Ing. Roberto Morales',role:'Residente de obra',initials:'RM',project:'P001',phone:'0991234567',shift:'7:00-17:00',status:'presente',hourly_rate:18.75,photo_url:null},
-    {id:'PER-002',name:'Arq. Gabriela Vera',role:'Supervisora',initials:'GV',project:'P002',phone:'0987654321',shift:'8:00-18:00',status:'presente',hourly_rate:15,photo_url:null},
-    {id:'PER-003',name:'Sr. Pedro Castillo',role:'Maestro mayor',initials:'PC',project:'P003',phone:'0976543210',shift:'6:00-16:00',status:'presente',hourly_rate:9,photo_url:null},
-    {id:'PER-004',name:'Ing. Juan Ponce',role:'Residente',initials:'JP',project:'P004',phone:'0965432109',shift:'—',status:'permiso',hourly_rate:18.75,photo_url:null},
-    {id:'PER-005',name:'Téc. Luis Guerrero',role:'Electricista jefe',initials:'LG',project:'P001',phone:'0954321098',shift:'7:00-17:00',status:'presente',hourly_rate:11.25,photo_url:null},
+    {id:'PER-001',name:'Ing. Roberto Morales',role:'Residente de obra',initials:'RM',phone:'0991234567',cedula:'',address:'',blood_type:'',shift:'7:00-17:00',status:'presente',hourly_rate:18.75,photo_url:null},
+    {id:'PER-002',name:'Arq. Gabriela Vera',role:'Supervisora',initials:'GV',phone:'0987654321',cedula:'',address:'',blood_type:'',shift:'8:00-18:00',status:'presente',hourly_rate:15,photo_url:null},
+    {id:'PER-003',name:'Sr. Pedro Castillo',role:'Maestro mayor',initials:'PC',phone:'0976543210',cedula:'',address:'',blood_type:'',shift:'6:00-16:00',status:'presente',hourly_rate:9,photo_url:null},
+    {id:'PER-004',name:'Ing. Juan Ponce',role:'Residente',initials:'JP',phone:'0965432109',cedula:'',address:'',blood_type:'',shift:'—',status:'permiso',hourly_rate:18.75,photo_url:null},
+    {id:'PER-005',name:'Téc. Luis Guerrero',role:'Electricista jefe',initials:'LG',phone:'0954321098',cedula:'',address:'',blood_type:'',shift:'7:00-17:00',status:'presente',hourly_rate:11.25,photo_url:null},
+  ],
+  staff_assignments:[
+    {id:'ASG-001',staff_id:'PER-001',project:'P001',date_from:'2026-01-01',date_to:'2026-06-30',shift_start:'07:00',shift_end:'17:00',work_days:'Lunes,Martes,Miércoles,Jueves,Viernes'},
+    {id:'ASG-002',staff_id:'PER-002',project:'P002',date_from:'2026-01-01',date_to:'2026-08-15',shift_start:'08:00',shift_end:'18:00',work_days:'Lunes,Martes,Miércoles,Jueves,Viernes'},
+    {id:'ASG-003',staff_id:'PER-003',project:'P003',date_from:'2026-01-01',date_to:'2026-09-10',shift_start:'06:00',shift_end:'16:00',work_days:'Lunes,Martes,Miércoles,Jueves,Viernes,Sábado'},
+    {id:'ASG-004',staff_id:'PER-004',project:'P004',date_from:'2026-03-01',date_to:'2026-12-20',shift_start:'08:00',shift_end:'17:00',work_days:'Lunes,Martes,Miércoles,Jueves,Viernes'},
+    {id:'ASG-005',staff_id:'PER-005',project:'P001',date_from:'2026-01-01',date_to:'2026-06-30',shift_start:'07:00',shift_end:'17:00',work_days:'Lunes,Martes,Miércoles,Jueves,Viernes'},
   ],
   quotes:[
-    {id:'COT-001',client:'Arq. Diana Suárez',description:'Enlucido y mampostería — Res. Las Palmas',total:18500,subtotal:16087,iva:2413,date:'2026-04-20',status:'aprobado',project:'Res. Las Palmas',iva_applied:true},
+    {id:'COT-001',client:'Arq. Diana Suárez',description:'Enlucido y mampostería — Res. Las Palmas',total:18500,subtotal:16087,iva:2413,date:'2026-04-20',status:'aprobado',project:null,iva_applied:true},
     {id:'COT-002',client:'Sr. Marco Espinoza',description:'Paredes de bloque — Bodega comercial',total:9800,subtotal:9800,iva:0,date:'2026-05-03',status:'pendiente',project:null,iva_applied:false},
     {id:'COT-003',client:'Constructora Roca S.A.',description:'Enlucido interior — 4 pisos Torre Sur',total:34200,subtotal:29739,iva:4461,date:'2026-05-07',status:'borrador',project:null,iva_applied:true},
   ],
@@ -519,35 +550,16 @@ const LOCAL = {
     {id:'doc-5',name:'Registro fotográfico may',type:'Registro',project:'P003',date:'7 may 2026',status:'completado',file_url:null,cloud_stored:true,size_kb:5120},
   ],
   pdf_templates:[
-    {id:'tpl-001',name:'Membrete Corporativo v2',type:'cotizacion',description:'Logo + datos empresariales en encabezado',file_url:'#',is_default:true,created_at:'2026-04-10',size_kb:210},
-  ]
+    {id:'tpl-001',name:'Membrete Corporativo v2',type:'cotizacion',description:'Logo + datos empresariales',file_url:'#',is_default:true,created_at:'2026-04-10',size_kb:210},
+  ],
+  bitacora:[]
 };
 
-// DATA es el caché en memoria; se sincroniza con Supabase al cargar
 let DATA = JSON.parse(JSON.stringify(LOCAL));
 
-// ══════════════════════════════════════════════
-// SUPABASE: CARGA DE DATOS
-// ══════════════════════════════════════════════
-
-// Mapeo de tablas Supabase → claves en DATA
-// Supabase: projects, tasks, payroll, expenses, inventory, staff, quotes, documents, pdf_templates
-const TABLE_MAP = {
-  projects:     'projects',
-  tasks:        'tasks',
-  payroll:      'payroll',
-  expenses:     'expenses',
-  inventory:    'inventory',
-  staff:        'staff',
-  quotes:       'quotes',
-  documents:    'documents',
-  pdf_templates:'pdf_templates',
-};
-
-// Normaliza los campos snake_case de Supabase para las vistas
-// (tus columnas en Supabase ya usan snake_case → los usamos directamente)
-async function loadAllData() {
-  if (!isConnected) return;
+// ── SUPABASE CRUD ──
+async function loadAllData(){
+  if(!isConnected) return;
   try {
     const fetches = await Promise.all([
       db.from('projects').select('*').order('id'),
@@ -556,96 +568,56 @@ async function loadAllData() {
       db.from('expenses').select('*').order('id'),
       db.from('inventory').select('*').order('id'),
       db.from('staff').select('*').order('id'),
+      db.from('staff_assignments').select('*').order('id'),
       db.from('quotes').select('*').order('id'),
       db.from('documents').select('*').order('id'),
       db.from('pdf_templates').select('*').order('id'),
+      db.from('bitacora').select('*').order('entry_date',{ascending:false}),
     ]);
-
-    const keys = ['projects','tasks','payroll','expenses','inventory','staff','quotes','documents','pdf_templates'];
-    fetches.forEach(({data, error}, i) => {
-      if (!error && data && data.length > 0) {
-        DATA[keys[i]] = data;
-      }
-    });
-    toast('Datos cargados desde Supabase', 'ok');
-  } catch (e) {
-    toast('Error al cargar datos: ' + e.message, 'err');
-  }
+    const keys=['projects','tasks','payroll','expenses','inventory','staff','staff_assignments','quotes','documents','pdf_templates','bitacora'];
+    fetches.forEach(({data,error},i)=>{if(!error&&data&&data.length>0) DATA[keys[i]]=data;});
+    toast('Datos cargados desde Supabase','ok');
+  } catch(e){toast('Error al cargar: '+e.message,'err');}
 }
 
-// ── Función genérica INSERT con fallback local ──
-async function dbInsert(table, row) {
-  if (!isConnected) {
-    DATA[table].push(row);
-    return { ok: true, local: true };
-  }
-  showLoader('Guardando en Supabase…');
+async function dbInsert(table,row){
+  if(!isConnected){DATA[table].push(row);return{ok:true,local:true};}
+  showLoader('Guardando…');
   try {
-    const { data, error } = await db.from(table).insert([row]).select().single();
-    if (error) throw error;
-    DATA[table].push(data);
-    toast('Guardado correctamente', 'ok');
-    hideLoader();
-    return { ok: true, data };
-  } catch (e) {
-    // Fallback: guarda local de todas formas
-    DATA[table].push(row);
-    toast('Error Supabase, guardado local: ' + e.message, 'err');
-    hideLoader();
-    return { ok: false, local: true };
-  }
+    const{data,error}=await db.from(table).insert([row]).select().single();
+    if(error)throw error;
+    DATA[table].push(data);toast('Guardado','ok');hideLoader();return{ok:true,data};
+  } catch(e){DATA[table].push(row);toast('Error Supabase, guardado local: '+e.message,'err');hideLoader();return{ok:false,local:true};}
+}
+async function dbDelete(table,id){
+  DATA[table]=DATA[table].filter(r=>r.id!==id);
+  if(!isConnected)return;
+  try{const{error}=await db.from(table).delete().eq('id',id);if(error)throw error;}
+  catch(e){toast('Error al eliminar: '+e.message,'err');}
+}
+async function dbUpdate(table,id,updates){
+  const idx=DATA[table].findIndex(r=>r.id===id);
+  if(idx>-1) DATA[table][idx]={...DATA[table][idx],...updates};
+  if(!isConnected)return;
+  try{const{error}=await db.from(table).update(updates).eq('id',id);if(error)throw error;toast('Actualizado','ok');}
+  catch(e){toast('Error al actualizar: '+e.message,'err');}
 }
 
-// ── Función genérica DELETE ──
-async function dbDelete(table, id) {
-  DATA[table] = DATA[table].filter(r => r.id !== id);
-  if (!isConnected) return;
-  try {
-    const { error } = await db.from(table).delete().eq('id', id);
-    if (error) throw error;
-  } catch (e) {
-    toast('Error al eliminar en Supabase: ' + e.message, 'err');
-  }
-}
+function projectName(id){const p=DATA.projects.find(p=>p.id===id);return p?p.name:(id||'—');}
 
-// ── Función genérica UPDATE ──
-async function dbUpdate(table, id, updates) {
-  const idx = DATA[table].findIndex(r => r.id === id);
-  if (idx > -1) DATA[table][idx] = { ...DATA[table][idx], ...updates };
-  if (!isConnected) return;
-  try {
-    const { error } = await db.from(table).update(updates).eq('id', id);
-    if (error) throw error;
-    toast('Actualizado correctamente', 'ok');
-  } catch (e) {
-    toast('Error al actualizar: ' + e.message, 'err');
-  }
-}
-
-// ══════════════════════════════════════════════
-// HELPERS: buscar nombre de proyecto por ID
-// ══════════════════════════════════════════════
-function projectName(id) {
-  const p = DATA.projects.find(p => p.id === id);
-  return p ? p.name : (id || '—');
-}
-
-// ══════════════════════════════════════════════
-// PINS Y LOGIN
-// ══════════════════════════════════════════════
-const PINS = { ops:'2000', adm:'100074' };
-let currentMode = null, currentPin = '', currentView = 'dashboard';
+// ── PINS & LOGIN ──
+const PINS={ops:'2000',adm:'100074'};
+let currentMode=null,currentPin='',currentView='dashboard',editingId=null;
 
 function selectMode(mode){
-  currentMode=mode; currentPin='';
+  currentMode=mode;currentPin='';
   document.getElementById('mode-ops').classList.toggle('selected',mode==='ops');
   document.getElementById('mode-adm').classList.toggle('selected',mode==='adm');
   document.getElementById('pin-section').style.display='block';
-  updateDots();
-  document.getElementById('pin-error').style.display='none';
+  updateDots();document.getElementById('pin-error').style.display='none';
 }
-function pinKey(k){ if(currentPin.length<6){currentPin+=k;updateDots();} }
-function pinDel(){ currentPin=currentPin.slice(0,-1);updateDots(); }
+function pinKey(k){if(currentPin.length<6){currentPin+=k;updateDots();}}
+function pinDel(){currentPin=currentPin.slice(0,-1);updateDots();}
 function updateDots(){
   const max=currentMode==='adm'?6:4;
   for(let i=1;i<=6;i++){
@@ -674,14 +646,13 @@ function doLogout(){
   ['mode-ops','mode-adm'].forEach(id=>document.getElementById(id).classList.remove('selected'));
 }
 
-// ══════════════════════════════════════════════
-// NAV
-// ══════════════════════════════════════════════
+// ── NAV ──
 const NAV_OPS=[
   {section:'Principal',items:[
     {id:'dashboard',icon:'ti-layout-dashboard',label:'Dashboard'},
     {id:'obras',icon:'ti-building-factory-2',label:'Obras',badge:()=>DATA.projects.length},
     {id:'cronograma',icon:'ti-calendar-event',label:'Cronograma'},
+    {id:'bitacora',icon:'ti-notebook',label:'Bitácora de obra'},
   ]},
   {section:'Operaciones',items:[
     {id:'tareas',icon:'ti-checklist',label:'Tareas',badge:()=>DATA.tasks.filter(t=>t.status==='pendiente').length},
@@ -697,6 +668,7 @@ const NAV_ADM=[
     {id:'dashboard',icon:'ti-layout-dashboard',label:'Dashboard'},
     {id:'obras',icon:'ti-building-factory-2',label:'Obras',badge:()=>DATA.projects.length},
     {id:'cronograma',icon:'ti-calendar-event',label:'Cronograma'},
+    {id:'bitacora',icon:'ti-notebook',label:'Bitácora de obra'},
   ]},
   {section:'Administración',items:[
     {id:'payroll',icon:'ti-receipt',label:'Roles de Pago',badge:()=>DATA.payroll.filter(p=>p.status==='pendiente').length||null},
@@ -714,8 +686,7 @@ const NAV_ADM=[
 
 function buildNav(mode){
   const nav=mode==='adm'?NAV_ADM:NAV_OPS;
-  const navEl=document.getElementById('sidebar-nav');
-  navEl.innerHTML='';
+  const navEl=document.getElementById('sidebar-nav');navEl.innerHTML='';
   nav.forEach(sec=>{
     navEl.innerHTML+=`<div class="nav-sec">${sec.section}</div>`;
     sec.items.forEach(it=>{
@@ -738,36 +709,28 @@ async function initApp(mode){
     document.getElementById('btn-report').style.display='';
   }
   buildNav(mode);
-  // Cargar datos frescos de Supabase al entrar
-  showLoader('Cargando datos de Supabase…');
-  await loadAllData();
-  hideLoader();
+  showLoader('Cargando datos…');await loadAllData();hideLoader();
   switchView('dashboard');
 }
-
 function refreshNav(){if(currentMode)buildNav(currentMode);}
 
-// ══════════════════════════════════════════════
-// ROUTER
-// ══════════════════════════════════════════════
+// ── ROUTER ──
 const VIEW_TITLES={
   dashboard:'Dashboard general',obras:'Gestión de obras',cronograma:'Cronograma',
   tareas:'Tareas y actividades',inventario:'Inventario y equipos',personal:'Personal en obra',
   presupuesto:'Presupuesto y costos',documentos:'Documentos',plantillas:'Plantillas PDF',
-  payroll:'Roles de Pago',gastos:'Gastos & Facturas',cotizaciones:'Cotizaciones'
+  payroll:'Roles de Pago',gastos:'Gastos & Facturas',cotizaciones:'Cotizaciones',
+  bitacora:'Bitácora de obra'
 };
-function switchView(id){
-  currentView=id;
+function switchView(id,extra){
+  currentView=id;editingId=null;
   document.getElementById('page-title').textContent=VIEW_TITLES[id]||id;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const navEl=document.getElementById('nav-'+id);
-  if(navEl)navEl.classList.add('active');
-  document.getElementById('main-content').innerHTML=renderView(id);
+  const navEl=document.getElementById('nav-'+id);if(navEl)navEl.classList.add('active');
+  document.getElementById('main-content').innerHTML=renderView(id,extra);
 }
 
-// ══════════════════════════════════════════════
-// KPI & FORMATO
-// ══════════════════════════════════════════════
+// ── KPI ──
 function kpi(){
   const gastosMes=DATA.expenses.reduce((s,g)=>s+g.total,0);
   const nominaPend=DATA.payroll.filter(p=>p.status==='pendiente').reduce((s,p)=>s+p.net,0);
@@ -775,41 +738,41 @@ function kpi(){
   const personal=DATA.staff.filter(s=>s.status==='presente').length;
   const stockCrit=DATA.inventory.filter(i=>i.status!=='ok').length;
   const cotAprobadas=DATA.quotes.filter(q=>q.status==='aprobado').reduce((s,q)=>s+q.total,0);
-  const avanceGlobal=DATA.projects.length>0?Math.round(DATA.projects.reduce((s,p)=>s+p.progress,0)/DATA.projects.length):0;
+  const avanceGlobal=DATA.projects.length>0?Math.round(DATA.projects.reduce((s,p)=>s+(p.progress||0),0)/DATA.projects.length):0;
   return{gastosMes,nominaPend,tareasPend,personal,stockCrit,cotAprobadas,avanceGlobal};
 }
-function $m(n){return '$'+Number(n).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function $m(n){return '$'+Number(n||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-// ══════════════════════════════════════════════
-// VIEWS
-// ══════════════════════════════════════════════
-function renderView(id){
+// ══ VIEWS ══
+function renderView(id,extra){
   switch(id){
-    case 'dashboard':    return renderDashboard();
-    case 'obras':        return renderObras();
-    case 'cronograma':   return renderCronograma();
-    case 'tareas':       return renderTareas();
-    case 'inventario':   return renderInventario();
-    case 'personal':     return renderPersonal();
-    case 'presupuesto':  return renderPresupuesto();
-    case 'documentos':   return renderDocumentos();
-    case 'plantillas':   return currentMode==='adm'?renderPlantillas():'<div class="card"><p style="color:var(--red);font-weight:600"><i class="ti ti-lock"></i> Acceso restringido.</p></div>';
-    case 'payroll':      return renderPayroll();
-    case 'gastos':       return renderGastos();
-    case 'cotizaciones': return currentMode==='adm'?renderCotizaciones():'<div class="card"><p style="color:var(--red);font-weight:600"><i class="ti ti-lock"></i> Acceso restringido.</p></div>';
+    case 'dashboard':   return renderDashboard();
+    case 'obras':       return renderObras();
+    case 'obras_detail':return renderObraDetail(extra);
+    case 'cronograma':  return renderCronograma();
+    case 'tareas':      return renderTareas();
+    case 'inventario':  return renderInventario();
+    case 'personal':    return renderPersonal();
+    case 'presupuesto': return renderPresupuesto();
+    case 'documentos':  return renderDocumentos();
+    case 'plantillas':  return currentMode==='adm'?renderPlantillas():'<div class="card"><p style="color:var(--red)"><i class="ti ti-lock"></i> Acceso restringido.</p></div>';
+    case 'payroll':     return renderPayroll();
+    case 'gastos':      return renderGastos();
+    case 'cotizaciones':return currentMode==='adm'?renderCotizaciones():'<div class="card"><p style="color:var(--red)"><i class="ti ti-lock"></i> Acceso restringido.</p></div>';
+    case 'bitacora':    return renderBitacora();
     default: return `<div class="card"><p>Vista en desarrollo.</p></div>`;
   }
 }
 
 // ── DASHBOARD ──
 function renderDashboard(){
-  const isAdm=currentMode==='adm';
-  const k=kpi();
+  const isAdm=currentMode==='adm';const k=kpi();
   const colors=['var(--orange)','var(--blue)','var(--green)','#7B1FA2'];
+  const activas=DATA.projects.filter(p=>p.status==='activo').length;
   let html=`<div class="metrics col4" style="margin-bottom:12px">
-    <div class="metric">
-      <div class="metric-label">Obras activas</div>
-      <div class="metric-value accent num">${DATA.projects.filter(p=>p.status==='activo').length}</div>
+    <div class="metric clickable" onclick="switchView('obras')" title="Ver obras">
+      <div class="metric-label">Obras activas <i class="ti ti-arrow-right" style="font-size:10px;color:var(--orange)"></i></div>
+      <div class="metric-value accent num">${activas}</div>
       <div class="metric-change up"><i class="ti ti-building-factory-2" style="font-size:11px"></i> ${DATA.projects.length} total</div>
     </div>
     <div class="metric">
@@ -829,8 +792,8 @@ function renderDashboard(){
       <div class="metric-change down"><i class="ti ti-trending-up"></i> ${DATA.expenses.length} registros</div>
     </div>`;
   } else {
-    html+=`<div class="metric">
-      <div class="metric-label">Tareas pendientes</div>
+    html+=`<div class="metric clickable" onclick="switchView('tareas')" title="Ver tareas">
+      <div class="metric-label">Tareas pendientes <i class="ti ti-arrow-right" style="font-size:10px;color:var(--orange)"></i></div>
       <div class="metric-value num" style="color:var(--red)">${k.tareasPend}</div>
       <div class="metric-change down"><i class="ti ti-clock"></i> de ${DATA.tasks.length} total</div>
     </div>
@@ -845,7 +808,7 @@ function renderDashboard(){
     <div class="card">
       <div class="card-header"><span class="card-title">Obras en progreso</span><span class="card-action" onclick="switchView('obras')">Ver todas →</span></div>`;
   DATA.projects.forEach((p,i)=>{
-    html+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100)">
+    html+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100);cursor:pointer" onclick="currentView='obras_detail';document.getElementById('page-title').textContent='${p.name}';document.getElementById('main-content').innerHTML=renderView('obras_detail','${p.id}')">
       <div style="width:8px;height:8px;border-radius:50%;background:${colors[i%4]};flex-shrink:0;margin-top:5px"></div>
       <div style="flex:1">
         <div style="font-weight:600;font-size:12px;color:var(--navy)">${p.name}</div>
@@ -860,21 +823,10 @@ function renderDashboard(){
       <div class="card-header"><span class="card-title">${isAdm?'Resumen financiero':'Tareas urgentes'}</span></div>`;
   if(isAdm){
     html+=`<div style="display:flex;flex-direction:column;gap:8px">
-      <div class="alert-item info"><i class="ti ti-report-money" style="color:var(--blue);font-size:15px;flex-shrink:0"></i>
-        <div><div class="alert-title">Gastos mes actual</div>
-        <div class="alert-sub num" style="font-size:13px;color:var(--navy)">${$m(k.gastosMes)}</div></div>
-      </div>
-      <div class="alert-item warn"><i class="ti ti-receipt" style="color:var(--amber);font-size:15px;flex-shrink:0"></i>
-        <div><div class="alert-title">${DATA.payroll.filter(p=>p.status==='pendiente').length} roles pendientes</div>
-        <div class="alert-sub">Neto: <span class="num">${$m(k.nominaPend)}</span></div></div>
-      </div>
-      <div class="alert-item info"><i class="ti ti-file-invoice" style="color:var(--green);font-size:15px;flex-shrink:0"></i>
-        <div><div class="alert-title">Cotizaciones aprobadas</div>
-        <div class="alert-sub"><span class="num">${$m(k.cotAprobadas)}</span></div></div>
-      </div>
-      ${k.stockCrit>0?`<div class="alert-item danger"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:15px;flex-shrink:0"></i>
-        <div><div class="alert-title">${k.stockCrit} ítem(s) con stock crítico</div></div>
-      </div>`:''}
+      <div class="alert-item info"><i class="ti ti-report-money" style="color:var(--blue);font-size:15px;flex-shrink:0"></i><div><div class="alert-title">Gastos mes actual</div><div class="alert-sub num" style="font-size:13px;color:var(--navy)">${$m(k.gastosMes)}</div></div></div>
+      <div class="alert-item warn"><i class="ti ti-receipt" style="color:var(--amber);font-size:15px;flex-shrink:0"></i><div><div class="alert-title">${DATA.payroll.filter(p=>p.status==='pendiente').length} roles pendientes</div><div class="alert-sub">Neto: <span class="num">${$m(k.nominaPend)}</span></div></div></div>
+      <div class="alert-item info"><i class="ti ti-file-invoice" style="color:var(--green);font-size:15px;flex-shrink:0"></i><div><div class="alert-title">Cotizaciones aprobadas</div><div class="alert-sub"><span class="num">${$m(k.cotAprobadas)}</span></div></div></div>
+      ${k.stockCrit>0?`<div class="alert-item danger"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:15px;flex-shrink:0"></i><div><div class="alert-title">${k.stockCrit} ítem(s) stock crítico</div></div></div>`:''}
     </div>`;
   } else {
     html+=DATA.tasks.filter(t=>t.priority==='alta').slice(0,5).map(t=>`
@@ -886,8 +838,7 @@ function renderDashboard(){
         <span class="priority p-${t.priority}">${t.priority}</span>
       </div>`).join('');
   }
-  html+=`</div>
-  </div>
+  html+=`</div></div>
   <div class="grid2">
     <div class="card">
       <div class="card-header"><span class="card-title">Actividad semanal</span></div>
@@ -904,24 +855,61 @@ function renderDashboard(){
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><span class="card-title">Alertas del sistema</span></div>
+      <div class="card-header"><span class="card-title">Alertas</span></div>
       <div style="display:flex;flex-direction:column;gap:7px">
-        ${DATA.inventory.filter(i=>i.status==='out').map(i=>`
-        <div class="alert-item danger"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:14px;flex-shrink:0"></i>
-          <div><div class="alert-title">Sin stock: ${i.name}</div><div class="alert-sub">${i.id}</div></div>
-        </div>`).join('')}
-        ${DATA.inventory.filter(i=>i.status==='low').map(i=>`
-        <div class="alert-item warn"><i class="ti ti-package" style="color:var(--amber);font-size:14px;flex-shrink:0"></i>
-          <div><div class="alert-title">Stock bajo: ${i.name}</div><div class="alert-sub">${i.qty} unidades</div></div>
-        </div>`).join('')}
-        ${DATA.tasks.filter(t=>t.priority==='alta'&&t.status==='pendiente').slice(0,2).map(t=>`
-        <div class="alert-item warn"><i class="ti ti-clock-exclamation" style="color:var(--amber);font-size:14px;flex-shrink:0"></i>
-          <div><div class="alert-title">Tarea urgente: ${t.name}</div></div>
-        </div>`).join('')}
+        ${DATA.inventory.filter(i=>i.status==='out').map(i=>`<div class="alert-item danger"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:14px;flex-shrink:0"></i><div><div class="alert-title">Sin stock: ${i.name}</div><div class="alert-sub">${i.id}</div></div></div>`).join('')}
+        ${DATA.inventory.filter(i=>i.status==='low').map(i=>`<div class="alert-item warn"><i class="ti ti-package" style="color:var(--amber);font-size:14px;flex-shrink:0"></i><div><div class="alert-title">Stock bajo: ${i.name}</div><div class="alert-sub">${i.qty} unidades</div></div></div>`).join('')}
+        ${DATA.tasks.filter(t=>t.priority==='alta'&&t.status==='pendiente').slice(0,2).map(t=>`<div class="alert-item warn"><i class="ti ti-clock-exclamation" style="color:var(--amber);font-size:14px;flex-shrink:0"></i><div><div class="alert-title">Tarea urgente: ${t.name}</div></div></div>`).join('')}
       </div>
     </div>
   </div>`;
   return html;
+}
+
+// ── OBRA DETAIL ──
+function renderObraDetail(pid){
+  const p=DATA.projects.find(pr=>pr.id===pid);if(!p) return renderObras();
+  const tareas=DATA.tasks.filter(t=>t.project===pid);
+  const gastos=DATA.expenses.filter(g=>g.project===pid);
+  const totalG=gastos.reduce((s,g)=>s+g.total,0);
+  const bit=DATA.bitacora.filter(b=>b.project===pid);
+  const isAdm=currentMode==='adm';
+  return `
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <button class="btn-ghost" onclick="switchView('obras')" style="font-size:11px;padding:5px 10px"><i class="ti ti-arrow-left"></i> Obras</button>
+    <span style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--navy)">${p.name}</span>
+    <span class="estado-badge e-${p.status}">${p.status}</span>
+    <button class="btn-primary" style="margin-left:auto;font-size:11px;padding:5px 11px" onclick="openModal('bitacora_entry','${pid}')"><i class="ti ti-plus"></i> Entrada bitácora</button>
+  </div>
+  <div class="metrics col4" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-label">Avance</div><div class="metric-value accent num">${p.progress}%</div><div class="prog-bar"><div class="prog-fill" style="width:${p.progress}%;background:var(--orange)"></div></div></div>
+    ${isAdm?`<div class="metric"><div class="metric-label">Presupuesto</div><div class="metric-value num">${$m(p.budget)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos</div><div class="metric-value num" style="color:var(--red)">${$m(totalG)}</div></div>
+    <div class="metric"><div class="metric-label">Plazo</div><div class="metric-value num" style="font-size:14px">${p.deadline||'—'}</div></div>`:
+    `<div class="metric"><div class="metric-label">Responsable</div><div class="metric-value" style="font-size:14px">${p.responsible||'—'}</div></div>
+    <div class="metric"><div class="metric-label">Tipo</div><div class="metric-value" style="font-size:14px">${p.type||'—'}</div></div>
+    <div class="metric"><div class="metric-label">Plazo</div><div class="metric-value" style="font-size:14px">${p.deadline||'—'}</div></div>`}
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tareas (${tareas.length})</span></div>
+      ${tareas.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin tareas.</p>':
+      `<table><thead><tr><th>Tarea</th><th>Responsable</th><th>Vence</th><th>Prioridad</th><th>Estado</th></tr></thead>
+      <tbody>${tareas.map(t=>`<tr><td>${t.name}</td><td>${t.responsible||''}</td><td>${t.due||'—'}</td>
+      <td><span class="priority p-${t.priority}">${t.priority}</span></td>
+      <td><span class="estado-badge e-${t.status}">${t.status}</span></td></tr>`).join('')}</tbody></table>`}
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Bitácora</span><span class="card-action" onclick="switchView('bitacora')">Ver completa →</span></div>
+      ${bit.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin entradas de bitácora.</p>':
+      bit.slice(0,3).map(b=>`<div class="bitacora-entry">
+        <div class="bitacora-photo">${b.photo_url?`<img src="${b.photo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo\\' style=\\'color:var(--gray-300);font-size:22px\\'></i>'">`:'<i class="ti ti-photo" style="color:var(--gray-300);font-size:22px"></i>'}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:12px;color:var(--navy)">${b.title||''}</div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${b.entry_date||''}</div>
+        <div style="font-size:11px;color:var(--gray-700);margin-top:4px">${(b.description||'').slice(0,100)}${(b.description||'').length>100?'…':''}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
 }
 
 // ── OBRAS ──
@@ -930,39 +918,61 @@ function renderObras(){
   return `<div class="card">
     <div class="card-header"><span class="card-title">Todas las obras (${DATA.projects.length})</span>
     <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('project')">+ Nueva obra</button></div>
-    <table><thead><tr><th>Obra</th><th>Tipo</th><th>Responsable</th><th>Avance</th><th>Presupuesto</th><th>Plazo</th><th>Estado</th></tr></thead>
+    <table><thead><tr><th>Obra</th><th>Tipo</th>
+    ${currentMode==='adm'?'<th>Responsable</th>':''}
+    <th>Avance</th>
+    ${currentMode==='adm'?'<th>Presupuesto</th>':''}
+    <th>Plazo</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${DATA.projects.map((p,i)=>`<tr>
-      <td><div style="font-weight:700;color:var(--navy)">${p.name}</div><div style="color:var(--gray-400);font-size:10.5px">${p.location||''}</div></td>
-      <td>${p.type||''}</td><td>${p.responsible||''}</td>
+      <td style="cursor:pointer" onclick="currentView='obras_detail';document.getElementById('page-title').textContent='${p.name.replace(/'/g,"\\'")}';document.getElementById('main-content').innerHTML=renderView('obras_detail','${p.id}')">
+        <div style="font-weight:700;color:var(--navy)">${p.name}</div>
+        <div style="color:var(--gray-400);font-size:10.5px">${p.location||''}</div>
+      </td>
+      <td>${p.type||''}</td>
+      ${currentMode==='adm'?`<td>${p.responsible||''}</td>`:''}
       <td><div style="display:flex;align-items:center;gap:7px">
         <div class="prog-bar" style="flex:1;margin:0"><div class="prog-fill" style="width:${p.progress}%;background:${colors[i%4]}"></div></div>
         <span class="num" style="color:${colors[i%4]};font-size:12px">${p.progress}%</span>
       </div></td>
-      <td class="num-cell">${$m(p.budget||0)}</td>
+      ${currentMode==='adm'?`<td class="num-cell">${$m(p.budget||0)}</td>`:''}
       <td>${p.deadline||'—'}</td>
       <td><span class="estado-badge e-${p.status}">${p.status}</span></td>
+      <td><div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('project','${p.id}')"><i class="ti ti-edit" style="font-size:10px"></i> Editar</button>
+        <button class="btn-danger-sm" onclick="confirmDelete('projects','${p.id}','obra')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div></td>
     </tr>`).join('')}</tbody></table>
   </div>`;
 }
 
 // ── CRONOGRAMA ──
 function renderCronograma(){
+  const isAdm=currentMode==='adm';
   return `<div class="card">
-    <div class="card-header"><span class="card-title">Cronograma — Torre Central (mayo–jul 2026)</span></div>
+    <div class="card-header">
+      <span class="card-title">Cronograma — Torre Central (may–jul 2026)</span>
+      ${isAdm?`<button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('cronograma')">+ Actividad</button>`:''}
+    </div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);padding:0 0 8px 140px;border-bottom:1px solid var(--gray-100);margin-bottom:8px;font-weight:700;letter-spacing:.05em;font-family:var(--fd)">
       <span>MAY</span><span>JUN</span><span>JUL</span></div>
     ${[
-      ['Encofrado P8','0','40','var(--orange)','En proceso'],
-      ['Vaciado losa','38','25','var(--blue)','Planif.'],
-      ['Instal. eléctrica','30','45','var(--green)','En proceso'],
-      ['Mampostería','55','35','#7B1FA2','Planif.'],
-      ['Acabados int.','70','28','var(--amber)','Planif.'],
-      ['Inspección final','92','8','var(--navy-mid)','Final'],
-    ].map(([label,left,w,color,text])=>`
+      ['Encofrado P8','0','40','var(--orange)','En proceso',75],
+      ['Vaciado losa','38','25','var(--blue)','Planif.',20],
+      ['Instal. eléctrica','30','45','var(--green)','En proceso',60],
+      ['Mampostería','55','35','#7B1FA2','Planif.',10],
+      ['Acabados int.','70','28','var(--amber)','Planif.',5],
+      ['Inspección final','92','8','var(--navy-mid)','Final',0],
+    ].map(([label,left,w,color,text,prog])=>`
     <div class="gantt-row">
       <div class="gantt-label">${label}</div>
-      <div class="gantt-track"><div class="gantt-bar" style="left:${left}%;width:${w}%;background:${color}">${text}</div></div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:${left}%;width:${w}%;background:${color}">${text}</div>
+      </div>
+      ${isAdm?`<span class="num" style="font-size:11px;color:var(--gray-400);min-width:32px;text-align:right">${prog}%</span>`:''}
     </div>`).join('')}
+  </div>
+  <div class="info-box"><i class="ti ti-info-circle"></i>
+    <p>Para ver el cronograma de una obra específica, entra a la obra desde <strong>Gestión de obras</strong> y selecciona la obra.</p>
   </div>`;
 }
 
@@ -976,13 +986,17 @@ function renderTareas(){
   <div class="card">
     <div class="card-header"><span class="card-title">Lista de tareas</span>
     <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('task')">+ Nueva tarea</button></div>
-    <table><thead><tr><th>Tarea</th><th>Obra</th><th>Responsable</th><th>Vence</th><th>Prioridad</th><th>Estado</th></tr></thead>
+    <table><thead><tr><th>Tarea</th><th>Obra</th><th>Responsable</th><th>Vence</th><th>Prioridad</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${DATA.tasks.map(t=>`<tr>
       <td style="font-weight:500">${t.name}</td>
       <td>${projectName(t.project)}</td>
       <td>${t.responsible||''}</td><td>${t.due||'—'}</td>
       <td><span class="priority p-${t.priority}">${t.priority}</span></td>
       <td><span class="estado-badge e-${t.status}">${t.status}</span></td>
+      <td><div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('task','${t.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-danger-sm" onclick="confirmDelete('tasks','${t.id}','tarea')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div></td>
     </tr>`).join('')}</tbody></table>
   </div>`;
 }
@@ -1000,7 +1014,9 @@ function renderInventario(){
     <div class="card-header"><span class="card-title">Herramientas y materiales</span>
     <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('inventory')">+ Agregar ítem</button></div>
     ${DATA.inventory.map(it=>`<div class="inv-item">
-      <div class="inv-photo"><i class="ti ti-tool" style="color:var(--gray-300)"></i></div>
+      <div class="inv-photo">
+        ${it.photo_url?`<img src="${it.photo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-tool\\' style=\\'color:var(--gray-300);font-size:18px\\'></i>'">`:'<i class="ti ti-tool" style="color:var(--gray-300);font-size:18px"></i>'}
+      </div>
       <div class="inv-info">
         <div class="inv-name">${it.name}</div>
         <div class="inv-code">${it.id}</div>
@@ -1011,6 +1027,10 @@ function renderInventario(){
         <div style="font-size:10px;color:var(--gray-400)">unid.</div>
       </div>
       <span class="${stClass[it.status]}">${stMap[it.status]}</span>
+      <div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('inventory','${it.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-danger-sm" onclick="confirmDelete('inventory','${it.id}','ítem')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div>
     </div>`).join('')}
   </div>`;
 }
@@ -1021,23 +1041,34 @@ function renderPersonal(){
     <div class="card-header"><span class="card-title">Personal en obra (${DATA.staff.length})</span>
     <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('staff')">+ Añadir persona</button></div>
     <div class="grid3">
-    ${DATA.staff.map(p=>`<div class="personal-card">
-      <div class="personal-photo"><span>${p.initials||'??'}</span></div>
-      <div class="personal-name">${p.name}</div>
-      <div class="personal-role">${p.role||''}</div>
-      <div class="personal-obra">${projectName(p.project)}</div>
-      ${currentMode==='adm'?`<div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/hora</div>`:''}
-      <span class="estado-badge e-${p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${p.status}</span>
-      <div><button class="btn-pdf-mini" onclick="generateStaffPDF('${p.id}')"><i class="ti ti-pdf"></i> PDF</button></div>
-    </div>`).join('')}
+    ${DATA.staff.map(p=>{
+      // Obtener asignaciones de proyectos
+      const asgs=DATA.staff_assignments.filter(a=>a.staff_id===p.id);
+      const proyText=asgs.length>0?asgs.map(a=>projectName(a.project)).join(', '):'Sin asignar';
+      return `<div class="personal-card">
+        <div class="personal-photo">
+          ${p.photo_url?`<img src="${p.photo_url}" onerror="this.textContent='${p.initials||'??'}'">`:p.initials||'??'}
+        </div>
+        <div class="personal-name">${p.name}</div>
+        <div class="personal-role">${p.role||''}</div>
+        <div class="personal-obra" title="${proyText}">${proyText.length>28?proyText.slice(0,28)+'…':proyText}</div>
+        ${currentMode==='adm'?`<div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/h</div>`:''}
+        <span class="estado-badge e-${p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${p.status}</span>
+        <div class="card-actions-row">
+          <button class="btn-edit-sm" onclick="openEditModal('staff','${p.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+          <button class="btn-danger-sm" onclick="confirmDelete('staff','${p.id}','persona')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+          <button class="btn-pdf-mini" onclick="generateStaffPDF('${p.id}')"><i class="ti ti-pdf"></i> PDF</button>
+        </div>
+      </div>`;
+    }).join('')}
     </div>
   </div>`;
 }
 
 // ── PRESUPUESTO ──
 function renderPresupuesto(){
+  const totalBudget=DATA.projects.reduce((s,p)=>s+(p.budget||0),0);
   const totalGastos=DATA.expenses.reduce((s,g)=>s+g.total,0);
-  const totalBudget=DATA.projects.reduce((s,p)=>s+p.budget,0);
   const pct=totalBudget>0?Math.round((totalGastos/totalBudget)*100):0;
   return `<div class="metrics col4" style="margin-bottom:12px">
     <div class="metric"><div class="metric-label">Presupuesto total</div><div class="metric-value num">${$m(totalBudget)}</div></div>
@@ -1047,8 +1078,23 @@ function renderPresupuesto(){
     <div class="metric"><div class="metric-label">% Ejecutado</div><div class="metric-value num" style="color:${pct>90?'var(--red)':'var(--navy)'}">${pct}%</div></div>
   </div>
   <div class="card">
+    <div class="card-header"><span class="card-title">Presupuesto por proyecto</span></div>
+    ${DATA.projects.map(p=>{
+      const gastP=DATA.expenses.filter(g=>g.project===p.id).reduce((s,g)=>s+g.total,0);
+      const pctP=p.budget>0?Math.round((gastP/p.budget)*100):0;
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-weight:700;font-size:12px;color:var(--navy)">${p.name}</span>
+          <span class="num" style="font-size:11px;color:var(--gray-400)">${$m(gastP)} / ${$m(p.budget||0)}</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(pctP,100)}%;background:${pctP>90?'var(--red)':pctP>70?'var(--amber)':'var(--green)'}"></div></div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:3px">${pctP}% ejecutado</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="card">
     <div class="card-header"><span class="card-title">Gastos por categoría</span></div>
-    ${['Materiales','Mano de obra','Equipos','Servicios'].map(cat=>{
+    ${['Materiales','Mano de obra','Equipos','Servicios','Transporte'].map(cat=>{
       const total=DATA.expenses.filter(g=>g.category===cat).reduce((s,g)=>s+g.total,0);
       const pctCat=totalGastos>0?Math.round((total/totalGastos)*100):0;
       return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--gray-100)">
@@ -1066,28 +1112,21 @@ function renderDocumentos(){
   const iconColors={Planos:'var(--red)',Memorias:'var(--red)',Financiero:'var(--green)',Contrato:'var(--blue)',Registro:'#7B1FA2'};
   return `<div class="card">
     <div class="card-header">
-      <div>
-        <span class="card-title">Documentos de obra</span>
-        <div style="margin-top:4px;font-size:11px;color:var(--gray-400)">
-          <i class="ti ti-cloud" style="color:var(--blue);vertical-align:-2px"></i>
-          ${DATA.documents.filter(d=>d.cloud_stored).length} en la nube ·
-          ${DATA.documents.filter(d=>!d.cloud_stored).length} pendientes
-        </div>
-      </div>
-      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('doc')">
-        <i class="ti ti-cloud-upload"></i> Subir
-      </button>
+      <div><span class="card-title">Documentos de obra</span>
+      <div style="margin-top:4px;font-size:11px;color:var(--gray-400)"><i class="ti ti-cloud" style="color:var(--blue);vertical-align:-2px"></i> ${DATA.documents.filter(d=>d.cloud_stored).length} en la nube · ${DATA.documents.filter(d=>!d.cloud_stored).length} pendientes</div></div>
+      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('doc')"><i class="ti ti-cloud-upload"></i> Subir</button>
     </div>
-    <table><thead><tr><th>Documento</th><th>Tipo</th><th>Obra</th><th>Fecha</th><th>Tamaño</th><th>Estado</th><th>Nube</th></tr></thead>
+    <table><thead><tr><th>Documento</th><th>Tipo</th><th>Obra</th><th>Fecha</th><th>Tamaño</th><th>Estado</th><th>Nube</th><th>Acciones</th></tr></thead>
     <tbody>${DATA.documents.map(d=>`<tr>
       <td><i class="ti ${icons[d.type]||'ti-file'}" style="color:${iconColors[d.type]||'var(--gray-400)'};font-size:14px;vertical-align:-2px"></i> ${d.name}</td>
       <td>${d.type||''}</td><td>${projectName(d.project)}</td><td>${d.date||'—'}</td>
       <td class="num-cell" style="font-size:11px">${d.size_kb>0?(d.size_kb>=1024?(d.size_kb/1024).toFixed(1)+' MB':d.size_kb+' KB'):'—'}</td>
       <td><span class="estado-badge e-${d.status==='aprobado'?'activo':d.status==='pendiente'?'pendiente':'completado'}">${d.status}</span></td>
-      <td><span class="cloud-tag ${d.cloud_stored?'stored':'pending'}">
-        <i class="ti ti-${d.cloud_stored?'cloud-check':'clock'}" style="font-size:11px"></i>
-        ${d.cloud_stored?'En nube':'Pendiente'}
-      </span></td>
+      <td><span class="cloud-tag ${d.cloud_stored?'stored':'pending'}"><i class="ti ti-${d.cloud_stored?'cloud-check':'clock'}" style="font-size:11px"></i> ${d.cloud_stored?'En nube':'Pendiente'}</span></td>
+      <td><div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('doc','${d.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-danger-sm" onclick="confirmDelete('documents','${d.id}','documento')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div></td>
     </tr>`).join('')}</tbody></table>
   </div>`;
 }
@@ -1098,113 +1137,73 @@ function renderPlantillas(){
   const typeLabels={cotizacion:'Cotización',rol_pago:'Rol de pago',reporte_cliente:'Reporte cliente',documento_generico:'Genérico'};
   return `<div class="card">
     <div class="card-header">
-      <div>
-        <span class="card-title">Plantillas PDF en la nube</span>
-        <div style="margin-top:4px;font-size:11px;color:var(--gray-400)">Sube tu membrete una sola vez.</div>
-      </div>
-      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('template')">
-        <i class="ti ti-cloud-upload"></i> Subir plantilla
-      </button>
+      <div><span class="card-title">Plantillas PDF</span><div style="margin-top:4px;font-size:11px;color:var(--gray-400)">La predeterminada se usa en todas las cotizaciones.</div></div>
+      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('template')"><i class="ti ti-cloud-upload"></i> Subir plantilla</button>
     </div>
     <div style="margin-bottom:16px">
-      <div class="upload-zone" onclick="handleTemplateUploadClick(event)">
+      <div class="upload-zone" onclick="document.getElementById('tpl-file-input').click()">
         <input type="file" accept=".pdf,.png,.jpg,.jpeg" id="tpl-file-input" style="display:none" onchange="handleTemplateFile(this)">
         <i class="ti ti-file-type-pdf"></i>
-        <p><strong>Arrastra tu plantilla PDF aquí</strong></p>
-        <p>o haz clic para seleccionar</p>
-        <span>PDF, PNG o JPG · máx. 10 MB</span>
+        <p><strong>Arrastra tu plantilla PDF aquí</strong></p><span>PDF, PNG o JPG · máx. 10 MB</span>
       </div>
       <div id="tpl-upload-status" style="margin-top:8px;display:none"></div>
     </div>
-    <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">
-      Plantillas guardadas (${tpls.length})
-    </div>
-    ${tpls.length===0?`<div style="text-align:center;padding:30px;color:var(--gray-400)">
-      <i class="ti ti-file-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Sin plantillas.</div>`:
-    `<div class="tpl-grid">
-      ${tpls.map(t=>`<div class="tpl-card ${t.is_default?'default-tpl':''}">
-        ${t.is_default?'<span class="tpl-badge-default">★ Predeterminada</span>':''}
-        <i class="ti ti-file-type-pdf"></i>
-        <div class="tpl-name">${t.name}</div>
-        <div class="tpl-type">${typeLabels[t.type]||t.type}</div>
-        <div class="tpl-type num" style="margin-top:3px">${t.size_kb} KB · ${t.created_at}</div>
-        <div class="tpl-actions">
-          ${!t.is_default?`<button class="tpl-set-default" onclick="setDefaultTemplate('${t.id}')">★ Predeterminar</button>`:''}
-          <button class="tpl-del" onclick="deleteTemplate('${t.id}')"><i class="ti ti-trash" style="font-size:10px"></i></button>
-        </div>
-      </div>`).join('')}
-    </div>`}
-  </div>
-  <div class="info-box"><i class="ti ti-bulb"></i>
-    <p>La plantilla <span>predeterminada</span> se usa automáticamente en todas las cotizaciones generadas.</p>
+    ${tpls.length===0?`<div style="text-align:center;padding:30px;color:var(--gray-400)"><i class="ti ti-file-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Sin plantillas.</div>`:
+    `<div class="tpl-grid">${tpls.map(t=>`<div class="tpl-card ${t.is_default?'default-tpl':''}">
+      ${t.is_default?'<span class="tpl-badge-default">★ Predeterminada</span>':''}
+      <i class="ti ti-file-type-pdf"></i>
+      <div class="tpl-name">${t.name}</div><div class="tpl-type">${typeLabels[t.type]||t.type}</div>
+      <div class="tpl-type num" style="margin-top:3px">${t.size_kb} KB · ${t.created_at}</div>
+      <div class="tpl-actions">
+        ${!t.is_default?`<button class="tpl-set-default" onclick="setDefaultTemplate('${t.id}')">★ Predeterminar</button>`:''}
+        <button class="tpl-del" onclick="deleteTemplate('${t.id}')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div>
+    </div>`).join('')}</div>`}
   </div>`;
 }
 
-function handleTemplateUploadClick(e){
-  e.preventDefault();
-  document.getElementById('tpl-file-input').click();
-}
 async function handleTemplateFile(input){
-  const file=input.files[0]; if(!file)return;
-  if(file.size>10*1024*1024){alert('El archivo supera 10 MB.');return;}
+  const file=input.files[0];if(!file)return;
+  if(file.size>10*1024*1024){alert('Supera 10 MB.');return;}
   const status=document.getElementById('tpl-upload-status');
   status.style.display='block';
-  status.innerHTML=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)">
-    <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Subiendo a Supabase…</div>`;
-  let fileUrl = '#local';
+  status.innerHTML=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Subiendo…</div>`;
+  let fileUrl='#local';
   if(isConnected){
-    const path = `templates/${Date.now()}_${file.name}`;
-    const { data: up, error: upErr } = await db.storage.from('buildflow-docs').upload(path, file, {upsert:true});
-    if(!upErr){
-      const { data: urlData } = db.storage.from('buildflow-docs').getPublicUrl(path);
-      fileUrl = urlData.publicUrl;
-    }
+    const path=`templates/${Date.now()}_${file.name}`;
+    const{data:up,error:upErr}=await db.storage.from('buildflow-docs').upload(path,file,{upsert:true});
+    if(!upErr){const{data:urlData}=db.storage.from('buildflow-docs').getPublicUrl(path);fileUrl=urlData.publicUrl;}
   }
   const id='tpl-'+(DATA.pdf_templates.length+1).toString().padStart(3,'0');
-  const row = {
-    id, name:file.name.replace(/\.[^.]+$/,''), type:'cotizacion', description:'',
-    file_url: fileUrl,
-    is_default: DATA.pdf_templates.length===0,
-    created_at: new Date().toLocaleDateString('es-EC'),
-    size_kb: Math.round(file.size/1024)
-  };
-  await dbInsert('pdf_templates', row);
-  status.innerHTML=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green)">
-    <i class="ti ti-cloud-check"></i> Guardada exitosamente.</div>`;
-  refreshNav();
-  setTimeout(()=>switchView('plantillas'),800);
+  const row={id,name:file.name.replace(/\.[^.]+$/,''),type:'cotizacion',description:'',file_url:fileUrl,is_default:DATA.pdf_templates.length===0,created_at:new Date().toLocaleDateString('es-EC'),size_kb:Math.round(file.size/1024)};
+  await dbInsert('pdf_templates',row);
+  status.innerHTML=`<div style="font-size:12px;color:var(--green)"><i class="ti ti-cloud-check"></i> Guardada.</div>`;
+  refreshNav();setTimeout(()=>switchView('plantillas'),800);
 }
 async function setDefaultTemplate(id){
-  // Actualiza todos los registros is_default
   DATA.pdf_templates.forEach(t=>t.is_default=t.id===id);
-  if(isConnected){
-    await db.from('pdf_templates').update({is_default:false}).neq('id','');
-    await db.from('pdf_templates').update({is_default:true}).eq('id',id);
-  }
+  if(isConnected){await db.from('pdf_templates').update({is_default:false}).neq('id','');await db.from('pdf_templates').update({is_default:true}).eq('id',id);}
   switchView('plantillas');
 }
 async function deleteTemplate(id){
-  if(!confirm('¿Eliminar esta plantilla?'))return;
-  await dbDelete('pdf_templates', id);
-  switchView('plantillas');
+  if(!confirm('¿Eliminar plantilla?'))return;
+  await dbDelete('pdf_templates',id);switchView('plantillas');
 }
 
 // ── PAYROLL ──
 function renderPayroll(){
-  const totalGross=DATA.payroll.reduce((s,p)=>s+(p.gross_total||0),0);
-  const totalIess=DATA.payroll.reduce((s,p)=>s+(p.iess||0),0);
-  const totalNet=DATA.payroll.reduce((s,p)=>s+(p.net||0),0);
+  const totGross=DATA.payroll.reduce((s,p)=>s+(p.gross_total||0),0);
+  const totIess=DATA.payroll.reduce((s,p)=>s+(p.iess||0),0);
+  const totNet=DATA.payroll.reduce((s,p)=>s+(p.net||0),0);
   const pending=DATA.payroll.filter(p=>p.status==='pendiente').length;
   const paid=DATA.payroll.filter(p=>p.status==='pagado').length;
   const allProjects=['Todos',...new Set(DATA.payroll.map(p=>p.project))];
   return `<div class="metrics col4" style="margin-bottom:12px">
-    <div class="metric"><div class="metric-label">Bruto total</div><div class="metric-value accent num">${$m(totalGross)}</div></div>
-    <div class="metric"><div class="metric-label">IESS 9.45%</div><div class="metric-value num" style="color:var(--red)">${$m(totalIess)}</div></div>
-    <div class="metric"><div class="metric-label">Neto a pagar</div><div class="metric-value num" style="color:var(--green)">${$m(totalNet)}</div></div>
-    <div class="metric"><div class="metric-label">Pagados / Pendientes</div>
-      <div class="metric-value num">${paid}<span style="font-size:13px;color:var(--gray-400)">/${DATA.payroll.length}</span></div>
-      <div class="metric-change ${pending>0?'warn':'up'}">${pending} pendiente${pending!==1?'s':''}</div>
-    </div>
+    <div class="metric"><div class="metric-label">Bruto total</div><div class="metric-value accent num">${$m(totGross)}</div></div>
+    <div class="metric"><div class="metric-label">IESS descuentos</div><div class="metric-value num" style="color:var(--red)">${$m(totIess)}</div></div>
+    <div class="metric"><div class="metric-label">Neto a pagar</div><div class="metric-value num" style="color:var(--green)">${$m(totNet)}</div></div>
+    <div class="metric"><div class="metric-label">Pagados / Total</div><div class="metric-value num">${paid}<span style="font-size:13px;color:var(--gray-400)">/${DATA.payroll.length}</span></div>
+      <div class="metric-change ${pending>0?'warn':'up'}">${pending} pendiente${pending!==1?'s':''}</div></div>
   </div>
   <div class="card">
     <div class="card-header" style="flex-wrap:wrap;gap:10px">
@@ -1216,16 +1215,14 @@ function renderPayroll(){
         <select class="form-select" id="payroll-filter-status" onchange="filterPayroll()">
           <option value="">Todos</option><option value="pendiente">Pendientes</option><option value="pagado">Pagados</option>
         </select>
-        <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportPayrollPDF()">
-          <i class="ti ti-file-export"></i> Exportar
-        </button>
+        <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportPayrollPDF()"><i class="ti ti-file-export"></i> Exportar</button>
         <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('payroll')">+ Nuevo rol</button>
       </div>
     </div>
     <div id="payroll-table-wrap">${buildPayrollTable(DATA.payroll)}</div>
   </div>
   <div class="info-box"><i class="ti ti-info-circle"></i>
-    <p><strong>Ecuador:</strong> IESS personal = <span>9.45%</span>. Extra 50% = ×1.5. Extra 100% = ×2. Aporte patronal <span>11.15%</span> va en Gastos.</p>
+    <p><strong>Ecuador:</strong> IESS personal = <span>9.45%</span> (editable por rol). Extra 50% = ×1.5. Extra 100% = ×2. Aporte patronal <span>11.15%</span> va en Gastos.</p>
   </div>`;
 }
 
@@ -1237,8 +1234,8 @@ function buildPayrollTable(rows){
   return `<table><thead><tr>
     <th>Código</th><th>Trabajador</th><th>Cargo</th><th>Proyecto</th>
     <th>H.Reg</th><th>H.50%</th><th>H.100%</th><th>$/h</th>
-    <th>Bruto</th><th style="color:var(--red)">IESS 9.45%</th><th style="color:var(--green)">Neto</th>
-    <th>Estado</th><th></th>
+    <th>Bruto</th><th style="color:var(--red)">IESS%</th><th style="color:var(--green)">Neto</th>
+    <th>Estado</th><th>Acciones</th>
   </tr></thead>
   <tbody>${rows.map(p=>`<tr>
     <td class="num-cell" style="color:var(--orange);font-size:10px">${p.id}</td>
@@ -1250,15 +1247,19 @@ function buildPayrollTable(rows){
     <td class="num-cell" style="text-align:center">${p.hours_extra100||0}</td>
     <td class="num-cell">${$m(p.hourly_rate||0)}</td>
     <td class="num-cell">${$m(p.gross_total||0)}</td>
-    <td class="num-cell" style="color:var(--red)">-${$m(p.iess||0)}</td>
+    <td class="num-cell" style="color:var(--red)">${((p.iess_pct||0.0945)*100).toFixed(2)}%</td>
     <td class="num-cell" style="color:var(--green);font-weight:500">${$m(p.net||0)}</td>
     <td><span class="estado-badge e-${p.status==='pagado'?'activo':'pendiente'}">${p.status}</span></td>
-    <td><button class="btn-pdf-mini" onclick="generatePayrollPDF('${p.id}')"><i class="ti ti-pdf"></i> PDF</button></td>
+    <td><div class="act-cell">
+      <button class="btn-edit-sm" onclick="openEditModal('payroll','${p.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+      <button class="btn-danger-sm" onclick="confirmDelete('payroll','${p.id}','rol')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      <button class="btn-pdf-mini" onclick="generatePayrollPDF('${p.id}')"><i class="ti ti-pdf"></i></button>
+    </div></td>
   </tr>`).join('')}</tbody>
   <tfoot><tr>
     <td colspan="8" style="font-weight:700;font-family:var(--fd);font-size:11px;color:var(--navy);padding:10px 9px">TOTALES (${rows.length})</td>
     <td class="num-cell" style="font-weight:500">${$m(totGross)}</td>
-    <td class="num-cell" style="color:var(--red);font-weight:500">-${$m(totIess)}</td>
+    <td class="num-cell" style="color:var(--red);font-weight:500">—</td>
     <td class="num-cell" style="color:var(--green);font-weight:500;font-size:14px">${$m(totNet)}</td>
     <td colspan="2"></td>
   </tr></tfoot></table>`;
@@ -1287,7 +1288,7 @@ function renderGastos(){
   <div class="card">
     <div class="card-header"><span class="card-title">Gastos y facturas</span>
     <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('expense')">+ Registrar gasto</button></div>
-    <table><thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Proyecto</th><th>Factura</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Estado</th></tr></thead>
+    <table><thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Proyecto</th><th>Factura</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${DATA.expenses.map(g=>`<tr>
       <td class="num-cell" style="color:var(--orange);font-size:10px">${g.id}</td>
       <td style="font-weight:500;color:var(--navy)">${g.description}</td>
@@ -1297,10 +1298,14 @@ function renderGastos(){
       <td class="num-cell">${g.iva_applied?`<span style="color:var(--amber)">${$m(g.iva)}</span>`:'—'}</td>
       <td class="num-cell" style="font-weight:500">${$m(g.total)}</td>
       <td><span class="estado-badge e-${g.status==='aprobado'?'activo':'pendiente'}">${g.status}</span></td>
+      <td><div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('expense','${g.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-danger-sm" onclick="confirmDelete('expenses','${g.id}','gasto')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+      </div></td>
     </tr>`).join('')}</tbody></table>
   </div>
   <div class="info-box"><i class="ti ti-receipt"></i>
-    <p><strong>IVA Ecuador 2025:</strong> Tarifa general <span>15%</span>. Activa la casilla IVA al registrar para calcular automáticamente.</p>
+    <p><strong>IVA Ecuador 2025:</strong> Tarifa general <span>15%</span>. Activa la casilla IVA al registrar.</p>
   </div>`;
 }
 
@@ -1313,22 +1318,15 @@ function renderCotizaciones(){
     <div class="metric"><div class="metric-label">Aprobadas</div><div class="metric-value num" style="color:var(--green)">${$m(totalAprobadas)}</div></div>
     <div class="metric"><div class="metric-label">Pendientes revisión</div><div class="metric-value num" style="color:var(--amber)">${DATA.quotes.filter(q=>q.status==='pendiente').length}</div></div>
   </div>
-  ${!hasDefaultTpl?`<div class="alert-item warn" style="margin-bottom:12px;border-radius:var(--r-md);border:1px solid var(--gray-200)">
-    <i class="ti ti-alert-triangle" style="color:var(--amber);font-size:18px;flex-shrink:0"></i>
-    <div><div class="alert-title">Sin plantilla PDF predeterminada</div>
-    <div class="alert-sub">Los PDFs se generarán sin membrete. <span class="card-action" onclick="switchView('plantillas')">Subir plantilla →</span></div></div>
-  </div>`:''}
   <div class="card">
     <div class="card-header">
       <span class="card-title">Cotizaciones <span style="font-size:10px;background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px"><i class="ti ti-shield-lock" style="font-size:10px"></i> Solo Administración</span></span>
       <div style="display:flex;gap:8px">
-        <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportAllQuotesPDF()">
-          <i class="ti ti-file-export"></i> Exportar listado
-        </button>
+        <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportAllQuotesPDF()"><i class="ti ti-file-export"></i> Exportar listado</button>
         <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('quote')">+ Nueva cotización</button>
       </div>
     </div>
-    <table><thead><tr><th>Código</th><th>Cliente</th><th>Descripción</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Fecha</th><th>Plantilla</th><th>Estado</th><th></th></tr></thead>
+    <table><thead><tr><th>Código</th><th>Cliente</th><th>Descripción</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
     <tbody>${DATA.quotes.map(q=>`<tr>
       <td class="num-cell" style="color:var(--orange);font-size:11px">${q.id}</td>
       <td style="font-weight:600;color:var(--navy)">${q.client}</td>
@@ -1337,335 +1335,373 @@ function renderCotizaciones(){
       <td class="num-cell">${q.iva_applied?`<span style="color:var(--amber)">${$m(q.iva)}</span>`:'—'}</td>
       <td class="num-cell" style="font-weight:500">${$m(q.total)}</td>
       <td style="font-size:11px">${q.date||'—'}</td>
-      <td><span class="cloud-tag ${hasDefaultTpl?'stored':'pending'}" style="font-size:9px">
-        <i class="ti ti-${hasDefaultTpl?'file-type-pdf':'file-off'}" style="font-size:10px"></i>
-        ${hasDefaultTpl?'Con membrete':'Sin membrete'}
-      </span></td>
       <td><span class="estado-badge e-${q.status==='aprobado'?'activo':q.status==='pendiente'?'pendiente':'borrador'}">${q.status}</span></td>
-      <td style="display:flex;gap:5px">
-        <button class="btn-pdf-mini" onclick="generateQuotePDF('${q.id}')"><i class="ti ti-pdf"></i> PDF</button>
-      </td>
+      <td><div class="act-cell">
+        <button class="btn-edit-sm" onclick="openEditModal('quote','${q.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-danger-sm" onclick="confirmDelete('quotes','${q.id}','cotización')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+        <button class="btn-pdf-mini" onclick="generateQuotePDF('${q.id}')"><i class="ti ti-pdf"></i></button>
+      </div></td>
     </tr>`).join('')}</tbody></table>
   </div>`;
 }
 
-// ══════════════════════════════════════════════
-// MODALS
-// ══════════════════════════════════════════════
-let currentModalType=null;
-function openModal(type){currentModalType=type;buildModal(type);document.getElementById('modal-backdrop').classList.add('open');}
+// ── BITACORA ──
+function renderBitacora(){
+  return `<div class="card">
+    <div class="card-header">
+      <div><span class="card-title">Bitácora de obra</span><div style="margin-top:4px;font-size:11px;color:var(--gray-400)">${DATA.bitacora.length} entradas registradas</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="form-select" style="font-size:11px;padding:5px 9px" id="bit-proj-filter" onchange="renderBitacoraList()">
+          <option value="">Todas las obras</option>
+          ${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+        </select>
+        <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('bitacora_entry','')">+ Nueva entrada</button>
+      </div>
+    </div>
+    <div id="bitacora-list">${renderBitacoraList_html('')}</div>
+  </div>`;
+}
+function renderBitacoraList(){
+  const pid=document.getElementById('bit-proj-filter')?.value||'';
+  document.getElementById('bitacora-list').innerHTML=renderBitacoraList_html(pid);
+}
+function renderBitacoraList_html(pid){
+  let entries=DATA.bitacora;
+  if(pid) entries=entries.filter(b=>b.project===pid);
+  if(entries.length===0) return '<div style="text-align:center;padding:30px;color:var(--gray-400)"><i class="ti ti-notebook" style="font-size:32px;display:block;margin-bottom:8px"></i>Sin entradas. Agrega la primera entrada de bitácora.</div>';
+  return entries.map(b=>`<div class="bitacora-entry">
+    <div class="bitacora-photo">
+      ${b.photo_url?`<img src="${b.photo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo\\' style=\\'color:var(--gray-300);font-size:22px\\'></i>'">`:'<i class="ti ti-photo" style="color:var(--gray-300);font-size:22px"></i>'}
+    </div>
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:12px;color:var(--navy)">${b.title||'Sin título'}</div>
+        <div class="act-cell">
+          <button class="btn-danger-sm" onclick="confirmDelete('bitacora','${b.id}','entrada')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--orange);margin-top:2px;font-weight:600">${projectName(b.project)} · ${b.entry_date||''}</div>
+      <div style="font-size:12px;color:var(--gray-700);margin-top:5px;line-height:1.5">${b.description||''}</div>
+      ${b.photo_url?`<div style="margin-top:5px"><a href="${b.photo_url}" target="_blank" style="font-size:11px;color:var(--blue)"><i class="ti ti-external-link"></i> Ver foto</a></div>`:''}
+    </div>
+  </div>`).join('');
+}
+
+// ══ MODALES ══
+let currentModalType=null,currentModalExtra=null;
+function openModal(type,extra){currentModalType=type;currentModalExtra=extra||null;editingId=null;document.getElementById('modal-save-btn').textContent='Guardar';buildModal(type,null,extra);document.getElementById('modal-backdrop').classList.add('open');}
 function openNewModal(){
-  const map={payroll:'payroll',gastos:'expense',cotizaciones:'quote',inventario:'inventory',personal:'staff',obras:'project',tareas:'task',documentos:'doc',plantillas:'template'};
+  const map={payroll:'payroll',gastos:'expense',cotizaciones:'quote',inventario:'inventory',personal:'staff',obras:'project',tareas:'task',documentos:'doc',plantillas:'template',bitacora:'bitacora_entry',cronograma:'cronograma'};
   openModal(map[currentView]||'project');
 }
-function closeModal(){document.getElementById('modal-backdrop').classList.remove('open');}
+function openEditModal(type,id){
+  editingId=id;currentModalType=type;
+  document.getElementById('modal-save-btn').textContent='Actualizar';
+  const data=DATA[typeToTable(type)].find(r=>r.id===id);
+  buildModal(type,data);
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+function typeToTable(t){const m={project:'projects',task:'tasks',payroll:'payroll',expense:'expenses',quote:'quotes',inventory:'inventory',staff:'staff',doc:'documents',template:'pdf_templates',bitacora_entry:'bitacora',cronograma:'cronograma'};return m[t]||t;}
+function closeModal(){document.getElementById('modal-backdrop').classList.remove('open');editingId=null;}
 
-function buildModal(type){
+function pOpts(){return DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');}
+
+function buildModal(type,data,extra){
   const titles={
-    project:'Nueva obra',task:'Nueva tarea',payroll:'Nuevo rol de pago',
-    expense:'Registrar gasto / factura',quote:'Nueva cotización',
-    inventory:'Agregar ítem al inventario',staff:'Añadir persona',
-    doc:'Subir documento',template:'Subir plantilla PDF'
+    project:editingId?'Editar obra':'Nueva obra',
+    task:editingId?'Editar tarea':'Nueva tarea',
+    payroll:editingId?'Editar rol de pago':'Nuevo rol de pago',
+    expense:editingId?'Editar gasto':'Registrar gasto / factura',
+    quote:editingId?'Editar cotización':'Nueva cotización',
+    inventory:editingId?'Editar ítem':'Agregar ítem al inventario',
+    staff:editingId?'Editar persona':'Añadir persona',
+    doc:editingId?'Editar documento':'Subir documento',
+    template:'Subir plantilla PDF',
+    bitacora_entry:'Nueva entrada de bitácora',
+    cronograma:'Nueva actividad cronograma'
   };
   document.getElementById('modal-title').textContent=titles[type]||type;
+  document.getElementById('modal-box').className='modal'+(type==='staff'?' wide':'');
   const body=document.getElementById('modal-body');
 
-  if(type==='payroll') body.innerHTML=`
+  if(type==='payroll'){
+    const p=data||{};
+    const iessP=((p.iess_pct||0.0945)*100).toFixed(2);
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group"><label class="form-label">Trabajador</label><input class="form-input" id="f-rname" placeholder="Nombre completo"></div>
-      <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="f-rrole" placeholder="Ej: Maestro mayor"></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
-        <select class="form-select" id="f-rproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-      </div>
-      <div class="form-group"><label class="form-label">Período</label><input class="form-input" id="f-rperiod" value="Mayo 2026"></div>
-      <div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-rrate" value="0" step="0.25" oninput="calcPayroll()"></div>
-      <div class="form-group"><label class="form-label">Horas regulares</label><input class="form-input" type="number" id="f-rhours" value="160" oninput="calcPayroll()"></div>
-      <div class="form-group"><label class="form-label">Horas extra 50%</label><input class="form-input" type="number" id="f-re50" value="0" oninput="calcPayroll()"></div>
-      <div class="form-group"><label class="form-label">Horas extra 100%</label><input class="form-input" type="number" id="f-re100" value="0" oninput="calcPayroll()"></div>
+      <div class="form-group"><label class="form-label">Trabajador</label><input class="form-input" id="f-rname" value="${p.name||''}"></div>
+      <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="f-rrole" value="${p.role||''}"></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-rproj">${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Período</label><input class="form-input" id="f-rperiod" value="${p.period||'Mayo 2026'}"></div>
+      <div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-rrate" value="${p.hourly_rate||0}" step="0.25" oninput="calcPayroll()"></div>
+      <div class="form-group"><label class="form-label">Horas regulares</label><input class="form-input" type="number" id="f-rhours" value="${p.hours_reg||160}" oninput="calcPayroll()"></div>
+      <div class="form-group"><label class="form-label">Horas extra 50%</label><input class="form-input" type="number" id="f-re50" value="${p.hours_extra50||0}" oninput="calcPayroll()"></div>
+      <div class="form-group"><label class="form-label">Horas extra 100%</label><input class="form-input" type="number" id="f-re100" value="${p.hours_extra100||0}" oninput="calcPayroll()"></div>
+      <div class="form-group"><label class="form-label">% IESS personal (ej: 9.45)</label><input class="form-input" type="number" id="f-riess" value="${iessP}" step="0.01" min="0" max="100" oninput="calcPayroll()" placeholder="9.45"></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-rstatus"><option value="pendiente" ${(p.status||'pendiente')==='pendiente'?'selected':''}>Pendiente</option><option value="pagado" ${p.status==='pagado'?'selected':''}>Pagado</option></select></div>
     </div>
     <div class="calc-preview">
       <div class="calc-row"><span>Bruto regular</span><strong class="num" id="calc-gross-reg">$0.00</strong></div>
       <div class="calc-row"><span>Horas extra</span><strong class="num" style="color:var(--orange)" id="calc-gross-extra">+$0.00</strong></div>
-      <div class="calc-row"><span>IESS personal 9.45%</span><strong class="num" style="color:var(--red)" id="calc-iess">-$0.00</strong></div>
+      <div class="calc-row"><span id="calc-iess-label">IESS personal 9.45%</span><strong class="num" style="color:var(--red)" id="calc-iess">-$0.00</strong></div>
       <div class="calc-row total-row"><span style="font-weight:700">Neto a pagar</span><strong class="num" id="calc-net">$0.00</strong></div>
     </div>`;
+    if(p.project){setTimeout(()=>{const s=document.getElementById('f-rproj');if(s)s.value=p.project;},50);}
+    setTimeout(calcPayroll,60);
+  }
 
-  else if(type==='expense') body.innerHTML=`
+  else if(type==='expense'){
+    const g=data||{};
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción</label><input class="form-input" id="f-gdesc" placeholder="Ej: Cemento Portland 40 sacos"></div>
-      <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="f-gcat"><option>Materiales</option><option>Mano de obra</option><option>Equipos</option><option>Transporte</option><option>Servicios</option><option>Otro</option></select></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
-        <select class="form-select" id="f-gproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-      </div>
-      <div class="form-group"><label class="form-label">N° de factura</label><input class="form-input" id="f-ginv" placeholder="001-001-000001"></div>
-      <div class="form-group"><label class="form-label">Subtotal ($)</label><input class="form-input" type="number" id="f-gsub" value="0" step="0.01" oninput="calcExpense()"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="iva-check"><input type="checkbox" id="f-giva" onchange="calcExpense()"> ¿Aplica IVA (15%)?</label></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción</label><input class="form-input" id="f-gdesc" value="${g.description||''}"></div>
+      <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="f-gcat">
+        ${['Materiales','Mano de obra','Equipos','Transporte','Servicios','Otro'].map(c=>`<option${(g.category||'')==c?' selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-gproj">${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">N° de factura</label><input class="form-input" id="f-ginv" value="${g.invoice||''}"></div>
+      <div class="form-group"><label class="form-label">Subtotal ($)</label><input class="form-input" type="number" id="f-gsub" value="${g.subtotal||0}" step="0.01" oninput="calcExpense()"></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="iva-check"><input type="checkbox" id="f-giva" onchange="calcExpense()" ${g.iva_applied?'checked':''}> ¿Aplica IVA (15%)?</label></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-gstatus"><option value="pendiente" ${(g.status||'')==='pendiente'?'selected':''}>Pendiente</option><option value="aprobado" ${g.status==='aprobado'?'selected':''}>Aprobado</option></select></div>
     </div>
     <div class="calc-preview">
       <div class="calc-row"><span>Subtotal</span><strong class="num" id="exp-sub">$0.00</strong></div>
       <div class="calc-row"><span>IVA 15%</span><strong class="num" style="color:var(--amber)" id="exp-iva">$0.00</strong></div>
       <div class="calc-row total-row"><span style="font-weight:700">Total</span><strong class="num" id="exp-total">$0.00</strong></div>
     </div>`;
+    if(g.project){setTimeout(()=>{const s=document.getElementById('f-gproj');if(s)s.value=g.project;},50);}
+    setTimeout(calcExpense,60);
+  }
 
-  else if(type==='quote') body.innerHTML=`
+  else if(type==='quote'){
+    const q=data||{};
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group"><label class="form-label">Cliente</label><input class="form-input" id="f-qclient" placeholder="Nombre o empresa"></div>
-      <div class="form-group"><label class="form-label">RUC / Cédula</label><input class="form-input" id="f-qruc" placeholder="Opcional"></div>
-      <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="f-qdate" value="${new Date().toISOString().split('T')[0]}"></div>
-      <div class="form-group"><label class="form-label">Validez (días)</label><input class="form-input" type="number" id="f-qvalid" value="30"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción</label><textarea class="form-input" id="f-qdesc" placeholder="Descripción del trabajo"></textarea></div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">Ítems</label>
+      <div class="form-group"><label class="form-label">Cliente</label><input class="form-input" id="f-qclient" value="${q.client||''}"></div>
+      <div class="form-group"><label class="form-label">RUC / Cédula</label><input class="form-input" id="f-qruc" value="${q.ruc||''}"></div>
+      <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="f-qdate" value="${q.date||new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label class="form-label">Validez (días)</label><input class="form-input" type="number" id="f-qvalid" value="${q.validity_days||30}"></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción</label><textarea class="form-input" id="f-qdesc">${q.description||''}</textarea></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Ítems</label>
         ${[0,1,2].map(i=>`<div class="form-grid col3" style="gap:6px;margin-bottom:6px">
           <input class="form-input" placeholder="Descripción" id="qi-desc-${i}">
           <input class="form-input" type="number" placeholder="Cant." id="qi-qty-${i}" oninput="calcQuote()">
           <input class="form-input" type="number" placeholder="Precio unit." id="qi-price-${i}" oninput="calcQuote()">
         </div>`).join('')}
       </div>
-      <div class="form-group" style="grid-column:1/-1"><label class="iva-check"><input type="checkbox" id="f-qiva" onchange="calcQuote()"> ¿Aplica IVA (15%)?</label></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="iva-check"><input type="checkbox" id="f-qiva" onchange="calcQuote()" ${q.iva_applied?'checked':''}> ¿Aplica IVA (15%)?</label></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-qstatus">
+        <option value="borrador" ${(q.status||'borrador')==='borrador'?'selected':''}>Borrador</option>
+        <option value="pendiente" ${q.status==='pendiente'?'selected':''}>Pendiente</option>
+        <option value="aprobado" ${q.status==='aprobado'?'selected':''}>Aprobado</option>
+      </select></div>
     </div>
     <div class="calc-preview" style="background:var(--navy)">
       <div class="calc-row"><span style="color:rgba(255,255,255,.6)">Subtotal</span><strong class="num" style="color:var(--white)" id="q-sub">$0.00</strong></div>
       <div class="calc-row"><span style="color:rgba(255,255,255,.6)">IVA 15%</span><strong class="num" style="color:var(--amber)" id="q-iva">$0.00</strong></div>
       <div class="calc-row total-row" style="border-top-color:rgba(255,255,255,.1)"><span style="font-weight:700;color:var(--white)">TOTAL</span><strong class="num" id="q-total" style="color:var(--orange);font-size:18px">$0.00</strong></div>
     </div>`;
+    setTimeout(calcQuote,60);
+  }
 
-  else if(type==='project') body.innerHTML=`
+  else if(type==='project'){
+    const p=data||{};
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group"><label class="form-label">Nombre de la obra</label><input class="form-input" id="f-pname"></div>
-      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="f-ptype"><option>Residencial</option><option>Comercial</option><option>Industrial</option><option>Habitacional</option></select></div>
-      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="f-presp" placeholder="Ing. Nombre"></div>
-      <div class="form-group"><label class="form-label">Ubicación</label><input class="form-input" id="f-ploc"></div>
-      <div class="form-group"><label class="form-label">Presupuesto ($)</label><input class="form-input" type="number" id="f-pbudget" value="0"></div>
-      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="f-pdate"></div>
-      <div class="form-group"><label class="form-label">% Avance inicial</label><input class="form-input" type="number" id="f-pprog" value="0" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Nombre de la obra</label><input class="form-input" id="f-pname" value="${p.name||''}"></div>
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="f-ptype">
+        ${['Residencial','Comercial','Industrial','Habitacional'].map(t=>`<option${(p.type||'')==t?' selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="f-presp" value="${p.responsible||''}"></div>
+      <div class="form-group"><label class="form-label">Ubicación</label><input class="form-input" id="f-ploc" value="${p.location||''}"></div>
+      <div class="form-group"><label class="form-label">Presupuesto ($)</label><input class="form-input" type="number" id="f-pbudget" value="${p.budget||0}"></div>
+      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="f-pdate" value="${p.deadline||''}"></div>
+      <div class="form-group"><label class="form-label">% Avance</label><input class="form-input" type="number" id="f-pprog" value="${p.progress||0}" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-pstatus">
+        ${['activo','retrasado','completado','pendiente'].map(s=>`<option${(p.status||'activo')==s?' selected':''}>${s}</option>`).join('')}
+      </select></div>
     </div>`;
+  }
 
-  else if(type==='task') body.innerHTML=`
+  else if(type==='task'){
+    const t=data||{};
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Nombre de la tarea</label><input class="form-input" id="f-tname"></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
-        <select class="form-select" id="f-tproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-      </div>
-      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="f-tresp"></div>
-      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="f-tdate"></div>
-      <div class="form-group"><label class="form-label">Prioridad</label><select class="form-select" id="f-tpri"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Nombre de la tarea</label><input class="form-input" id="f-tname" value="${t.name||''}"></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-tproj">${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="f-tresp" value="${t.responsible||''}"></div>
+      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="f-tdate" value="${t.due||''}"></div>
+      <div class="form-group"><label class="form-label">Prioridad</label><select class="form-select" id="f-tpri">
+        ${['alta','media','baja'].map(v=>`<option value="${v}"${(t.priority||'media')===v?' selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-tstatus">
+        ${['pendiente','activo','completado'].map(v=>`<option value="${v}"${(t.status||'pendiente')===v?' selected':''}>${v}</option>`).join('')}
+      </select></div>
     </div>`;
+    if(t.project){setTimeout(()=>{const s=document.getElementById('f-tproj');if(s)s.value=t.project;},50);}
+  }
 
-  else if(type==='inventory') body.innerHTML=`
+  else if(type==='inventory'){
+    const it=data||{};
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group"><label class="form-label">Nombre del ítem</label><input class="form-input" id="f-iname"></div>
-      <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="f-icat"><option>Equipo</option><option>Material</option><option>Eléctrico</option><option>Herramienta menor</option></select></div>
-      <div class="form-group"><label class="form-label">Cantidad</label><input class="form-input" type="number" id="f-iqty" value="1"></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
-        <select class="form-select" id="f-iproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+      <div class="form-group"><label class="form-label">Nombre del ítem</label><input class="form-input" id="f-iname" value="${it.name||''}"></div>
+      <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="f-icat">
+        ${['Equipo','Material','Eléctrico','Herramienta menor'].map(c=>`<option${(it.category||'')==c?' selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Cantidad</label><input class="form-input" type="number" id="f-iqty" value="${it.qty||1}"></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-iproj"><option value="">Sin asignar</option>${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Fecha desde</label><input class="form-input" type="date" id="f-ifrom" value="${it.date_from||new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label class="form-label">Fecha hasta (opcional)</label><input class="form-input" type="date" id="f-ito" value="${it.date_to||''}"></div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">URL de foto (Google Drive público o enlace directo)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" style="flex:1" id="f-iphoto" value="${it.photo_url||''}" placeholder="https://drive.google.com/uc?id=..." oninput="previewUrlImage('f-iphoto','inv-photo-prev')">
+          <img id="inv-photo-prev" class="url-preview ${it.photo_url?'show':''}" src="${it.photo_url||''}" onerror="this.classList.remove('show')">
+        </div>
+        <span style="font-size:10px;color:var(--gray-400)">Para Google Drive: usa el enlace de compartir con acceso público (copia el ID del archivo y usa: https://drive.google.com/uc?id=TU_ID)</span>
       </div>
-      <div class="form-group"><label class="form-label">Fecha desde</label><input class="form-input" type="date" id="f-ifrom" value="${new Date().toISOString().split('T')[0]}"></div>
     </div>`;
+    if(it.project){setTimeout(()=>{const s=document.getElementById('f-iproj');if(s)s.value=it.project;},50);}
+  }
 
-  else if(type==='staff') body.innerHTML=`
+  else if(type==='staff'){
+    const p=data||{};
+    const asgs=DATA.staff_assignments.filter(a=>a.staff_id===p.id)||[];
+    const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    body.innerHTML=`
     <div class="form-grid col2">
-      <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="f-sname" placeholder="Ing. Nombre Apellido"></div>
-      <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="f-srole"></div>
-      <div class="form-group"><label class="form-label">Cédula</label><input class="form-input" id="f-sced" placeholder="0900000000"></div>
-      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="f-sphone" placeholder="09XXXXXXXX"></div>
-      <div class="form-group"><label class="form-label">Proyecto asignado</label>
-        <select class="form-select" id="f-sproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+      <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="f-sname" value="${p.name||''}"></div>
+      <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="f-srole" value="${p.role||''}"></div>
+      <div class="form-group"><label class="form-label">Cédula</label><input class="form-input" id="f-sced" value="${p.cedula||''}"></div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="f-sphone" value="${p.phone||''}"></div>
+      <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="f-saddr" value="${p.address||''}"></div>
+      <div class="form-group"><label class="form-label">Tipo de sangre</label><input class="form-input" id="f-sblood" value="${p.blood_type||''}" placeholder="Ej: O+"></div>
+      <div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-shourly" value="${p.hourly_rate||0}" step="0.25"></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-sstatus">
+        ${['presente','permiso','ausente'].map(v=>`<option${(p.status||'presente')===v?' selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">URL de foto (Google Drive público o enlace directo)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" style="flex:1" id="f-sphoto" value="${p.photo_url||''}" placeholder="https://drive.google.com/uc?id=..." oninput="previewUrlImage('f-sphoto','staff-photo-prev')">
+          <img id="staff-photo-prev" class="url-preview ${p.photo_url?'show':''}" src="${p.photo_url||''}" onerror="this.classList.remove('show')" style="width:52px;height:52px;border-radius:50%">
+        </div>
+        <span style="font-size:10px;color:var(--gray-400)">Pega el enlace público de Google Drive. El formato correcto es: https://drive.google.com/uc?id=ID_DEL_ARCHIVO</span>
       </div>
-      <div class="form-group"><label class="form-label">Jornada</label><input class="form-input" id="f-sshift" placeholder="7:00–17:00"></div>
-      <div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-shourly" value="0" step="0.25"></div>
-    </div>`;
-
-  else if(type==='doc') body.innerHTML=`
-    <div class="form-grid col2" style="margin-bottom:16px">
-      <div class="form-group"><label class="form-label">Nombre del documento</label><input class="form-input" id="f-dname" placeholder="Planos arquitectónicos v4"></div>
-      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="f-dtype"><option>Planos</option><option>Memorias</option><option>Financiero</option><option>Contrato</option><option>Registro</option><option>Otro</option></select></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
-        <select class="form-select" id="f-dproj">${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
-      </div>
-      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-dstatus"><option value="pendiente">Pendiente</option><option value="aprobado">Aprobado</option><option value="completado">Completado</option></select></div>
     </div>
-    <div class="upload-zone" id="doc-upload-zone">
+    <div style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="form-label" style="margin:0">Asignaciones a proyectos</div>
+        <button class="btn-ghost" style="font-size:11px;padding:4px 9px" onclick="addAssignRow()"><i class="ti ti-plus"></i> Agregar asignación</button>
+      </div>
+      <div id="assign-rows">
+        ${asgs.length>0?asgs.map((a,i)=>assignRowHtml(i,a)).join(''): assignRowHtml(0,{})}
+      </div>
+    </div>`;
+  }
+
+  else if(type==='doc'){
+    const d=data||{};
+    body.innerHTML=`
+    <div class="form-grid col2" style="margin-bottom:16px">
+      <div class="form-group"><label class="form-label">Nombre del documento</label><input class="form-input" id="f-dname" value="${d.name||''}"></div>
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="f-dtype">
+        ${['Planos','Memorias','Financiero','Contrato','Registro','Otro'].map(t=>`<option${(d.type||'')==t?' selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-dproj">${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-dstatus">
+        ${['pendiente','aprobado','completado'].map(v=>`<option${(d.status||'pendiente')===v?' selected':''}>${v}</option>`).join('')}
+      </select></div>
+    </div>
+    ${!editingId?`<div class="upload-zone" id="doc-upload-zone">
       <input type="file" id="doc-file-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.docx" onchange="previewDocFile(this)">
       <i class="ti ti-cloud-upload" id="doc-upload-icon"></i>
       <p id="doc-upload-label"><strong>Arrastra el archivo aquí</strong></p>
-      <p id="doc-upload-sub">PDF, imágenes, Excel, Word · se guarda en la nube</p>
-      <span>Máx. 20 MB</span>
+      <p>PDF, imágenes, Excel, Word</p><span>Máx. 20 MB</span>
     </div>
-    <div id="doc-file-preview" style="margin-top:10px;display:none;font-size:12px;color:var(--green)"></div>`;
+    <div id="doc-file-preview" style="margin-top:10px;display:none;font-size:12px;color:var(--green)"></div>`:
+    `<div class="info-box" style="margin-top:0"><i class="ti ti-info-circle"></i><p>Para cambiar el archivo, elimina este documento y sube uno nuevo.</p></div>`}`;
+    if(d.project){setTimeout(()=>{const s=document.getElementById('f-dproj');if(s)s.value=d.project;},50);}
+  }
 
-  else if(type==='template') body.innerHTML=`
-    <div class="form-grid col2" style="margin-bottom:16px">
-      <div class="form-group"><label class="form-label">Nombre de la plantilla</label><input class="form-input" id="f-tplname" placeholder="Membrete corporativo 2026"></div>
-      <div class="form-group"><label class="form-label">Tipo de documento</label>
-        <select class="form-select" id="f-tpltype">
-          <option value="cotizacion">Cotización</option><option value="rol_pago">Rol de pago</option>
-          <option value="reporte_cliente">Reporte cliente</option><option value="documento_generico">Genérico</option>
-        </select>
+  else if(type==='bitacora_entry'){
+    body.innerHTML=`
+    <div class="form-grid col2">
+      <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="f-btitle" placeholder="Ej: Avance semana 18"></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-bproj"><option value="">Seleccionar…</option>${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="f-bdate" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label class="form-label">Semana N°</label><input class="form-input" type="number" id="f-bweek" placeholder="Ej: 18"></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción de actividades</label><textarea class="form-input" id="f-bdesc" style="min-height:100px" placeholder="Describe lo que se hizo esta semana…"></textarea></div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">URL de foto (Google Drive público o enlace directo)</label>
+        <input class="form-input" id="f-bphoto" placeholder="https://drive.google.com/uc?id=..." oninput="previewUrlImage('f-bphoto','bit-photo-prev')">
+        <div style="margin-top:8px"><img id="bit-photo-prev" class="url-preview" style="width:120px;height:80px;border-radius:8px;object-fit:cover" onerror="this.classList.remove('show')"></div>
+        <span style="font-size:10px;color:var(--gray-400)">Sube la foto de avance a Google Drive (acceso público) y pega el enlace aquí.</span>
       </div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción (opcional)</label><input class="form-input" id="f-tpldesc"></div>
-    </div>
-    <div class="upload-zone">
-      <input type="file" accept=".pdf,.png,.jpg,.jpeg" id="f-tplfile" onchange="previewTplFile(this)">
-      <i class="ti ti-file-type-pdf"></i>
-      <p><strong>Arrastra tu plantilla PDF aquí</strong></p>
-      <span>PDF, PNG, JPG · máx. 10 MB</span>
-    </div>
-    <div id="tpl-modal-preview" style="margin-top:8px;display:none;font-size:12px;color:var(--green)"></div>
-    <label class="iva-check" style="margin-top:14px"><input type="checkbox" id="f-tpldefault"> Establecer como predeterminada</label>`;
+      <div class="form-group"><label class="form-label">Creado por</label><input class="form-input" id="f-bby" placeholder="Nombre de quien reporta"></div>
+    </div>`;
+    if(extra){setTimeout(()=>{const s=document.getElementById('f-bproj');if(s)s.value=extra;},50);}
+  }
 }
 
+// Assignment rows para modal de staff
+let assignCount=0;
+function assignRowHtml(idx,a){
+  assignCount=Math.max(assignCount,idx+1);
+  const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const selDias=(a.work_days||'').split(',').filter(Boolean);
+  return `<div class="assign-row" id="arow-${idx}">
+    <button class="remove-assign" onclick="removeAssignRow(${idx})" title="Quitar">×</button>
+    <div class="form-grid col2" style="gap:8px">
+      <div class="form-group"><label class="form-label">Proyecto</label>
+        <select class="form-select" id="a-proj-${idx}"><option value="">Sin asignar</option>${pOpts()}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Jornada</label>
+        <div style="display:flex;gap:6px">
+          <input class="form-input" style="flex:1" id="a-from-${idx}" type="time" value="${a.shift_start||'07:00'}">
+          <span style="padding-top:9px;color:var(--gray-400)">—</span>
+          <input class="form-input" style="flex:1" id="a-to-${idx}" type="time" value="${a.shift_end||'17:00'}">
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Desde</label><input class="form-input" type="date" id="a-dfrom-${idx}" value="${a.date_from||''}"></div>
+      <div class="form-group"><label class="form-label">Hasta</label><input class="form-input" type="date" id="a-dto-${idx}" value="${a.date_to||''}"></div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Días de trabajo</label>
+        <div class="days-check">
+          ${dias.map(d=>`<span class="day-chip${selDias.includes(d)?' selected':''}" onclick="toggleDay(this,'${d}')">${d.slice(0,3)}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function addAssignRow(){
+  const container=document.getElementById('assign-rows');
+  const div=document.createElement('div');div.innerHTML=assignRowHtml(assignCount,{});
+  container.appendChild(div.firstElementChild);
+  const idx=assignCount-1;
+  // set project select value if needed
+}
+function removeAssignRow(idx){const el=document.getElementById('arow-'+idx);if(el)el.remove();}
+function toggleDay(el,day){el.classList.toggle('selected');}
+
+function previewUrlImage(inputId,imgId){
+  const url=document.getElementById(inputId)?.value||'';
+  const img=document.getElementById(imgId);if(!img)return;
+  if(url){img.src=url;img.classList.add('show');}else{img.classList.remove('show');}
+}
 function previewDocFile(input){
   const f=input.files[0];if(!f)return;
   document.getElementById('doc-file-preview').style.display='block';
   document.getElementById('doc-file-preview').innerHTML=`<i class="ti ti-cloud-check"></i> "${f.name}" listo (${(f.size/1024).toFixed(0)} KB)`;
   document.getElementById('doc-upload-label').textContent=f.name;
 }
-function previewTplFile(input){
-  const f=input.files[0];if(!f)return;
-  document.getElementById('tpl-modal-preview').style.display='block';
-  document.getElementById('tpl-modal-preview').innerHTML=`<i class="ti ti-cloud-check"></i> "${f.name}" listo (${(f.size/1024).toFixed(0)} KB)`;
-}
 
-// ══════════════════════════════════════════════
-// SAVE MODAL → Supabase
-// ══════════════════════════════════════════════
-async function saveModal(){
-  const t=currentModalType;
-
-  if(t==='payroll'){
-    const hrs=parseFloat(document.getElementById('f-rhours').value)||0;
-    const e50=parseFloat(document.getElementById('f-re50').value)||0;
-    const e100=parseFloat(document.getElementById('f-re100').value)||0;
-    const rate=parseFloat(document.getElementById('f-rrate').value)||0;
-    const gross_reg=hrs*rate, gross_e50=e50*rate*1.5, gross_e100=e100*rate*2;
-    const gross_total=gross_reg+gross_e50+gross_e100;
-    const iess=gross_total*0.0945;
-    const net=gross_total-iess;
-    const id='ROL-'+(DATA.payroll.length+1).toString().padStart(3,'0');
-    await dbInsert('payroll',{id,period:document.getElementById('f-rperiod').value,
-      project:document.getElementById('f-rproj').value,
-      name:document.getElementById('f-rname').value,role:document.getElementById('f-rrole').value,
-      hourly_rate:rate,hours_reg:hrs,hours_extra50:e50,hours_extra100:e100,
-      gross_reg,gross_e50,gross_e100,gross_total,iess,net,status:'pendiente'});
-
-  } else if(t==='expense'){
-    const subtotal=parseFloat(document.getElementById('f-gsub').value)||0;
-    const iva_applied=document.getElementById('f-giva').checked;
-    const iva=iva_applied?subtotal*0.15:0;
-    const id='GAS-'+(40+DATA.expenses.length+1).toString().padStart(4,'0');
-    await dbInsert('expenses',{id,description:document.getElementById('f-gdesc').value,
-      category:document.getElementById('f-gcat').value,
-      project:document.getElementById('f-gproj').value,
-      invoice:document.getElementById('f-ginv').value||'—',
-      subtotal,iva_applied,iva,total:subtotal+iva,
-      date:new Date().toLocaleDateString('es-EC'),status:'pendiente'});
-
-  } else if(t==='quote'){
-    let sub=0;
-    for(let i=0;i<3;i++){const q=parseFloat(document.getElementById('qi-qty-'+i)?.value)||0;const p=parseFloat(document.getElementById('qi-price-'+i)?.value)||0;sub+=q*p;}
-    const iva_applied=document.getElementById('f-qiva').checked;
-    const iva=iva_applied?sub*0.15:0;
-    const id='COT-'+(DATA.quotes.length+1).toString().padStart(3,'0');
-    await dbInsert('quotes',{id,client:document.getElementById('f-qclient').value,
-      description:document.getElementById('f-qdesc').value,
-      subtotal:sub,iva,total:sub+iva,iva_applied,
-      date:document.getElementById('f-qdate').value,status:'borrador',project:null});
-
-  } else if(t==='project'){
-    const id='P'+(DATA.projects.length+1).toString().padStart(3,'0');
-    await dbInsert('projects',{id,name:document.getElementById('f-pname').value,
-      type:document.getElementById('f-ptype').value,
-      responsible:document.getElementById('f-presp').value,
-      progress:parseInt(document.getElementById('f-pprog').value)||0,
-      deadline:document.getElementById('f-pdate').value,status:'activo',
-      location:document.getElementById('f-ploc').value,
-      budget:parseFloat(document.getElementById('f-pbudget').value)||0});
-
-  } else if(t==='task'){
-    const id='T'+(DATA.tasks.length+1).toString().padStart(3,'0');
-    await dbInsert('tasks',{id,name:document.getElementById('f-tname').value,
-      project:document.getElementById('f-tproj').value,
-      responsible:document.getElementById('f-tresp').value,
-      due:document.getElementById('f-tdate').value,
-      priority:document.getElementById('f-tpri').value,status:'pendiente'});
-
-  } else if(t==='inventory'){
-    const cats={Equipo:'A',Material:'M',Eléctrico:'E','Herramienta menor':'H'};
-    const cat=document.getElementById('f-icat').value;
-    const id='INV-'+(cats[cat]||'X')+(DATA.inventory.length+1).toString().padStart(3,'0');
-    const qty=parseInt(document.getElementById('f-iqty').value)||0;
-    await dbInsert('inventory',{id,name:document.getElementById('f-iname').value,category:cat,qty,
-      project:document.getElementById('f-iproj').value,
-      date_from:document.getElementById('f-ifrom').value,
-      status:qty===0?'out':qty<10?'low':'ok'});
-
-  } else if(t==='staff'){
-    const id='PER-'+(DATA.staff.length+1).toString().padStart(3,'0');
-    const name=document.getElementById('f-sname').value;
-    const initials=name.split(' ').filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'XX';
-    await dbInsert('staff',{id,name,role:document.getElementById('f-srole').value,initials,
-      project:document.getElementById('f-sproj').value,
-      phone:document.getElementById('f-sphone').value,
-      shift:document.getElementById('f-sshift').value,status:'presente',
-      hourly_rate:parseFloat(document.getElementById('f-shourly').value)||0,photo_url:null});
-
-  } else if(t==='doc'){
-    // Upload al Storage de Supabase si está conectado
-    const fileInput=document.getElementById('doc-file-input');
-    const file=fileInput?.files[0];
-    let fileUrl=null, cloud_stored=false, size_kb=0;
-    if(file && isConnected){
-      const path=`documents/${Date.now()}_${file.name}`;
-      const { data: up, error: upErr } = await db.storage.from('buildflow-docs').upload(path, file, {upsert:true});
-      if(!upErr){
-        const { data: urlData } = db.storage.from('buildflow-docs').getPublicUrl(path);
-        fileUrl=urlData.publicUrl; cloud_stored=true; size_kb=Math.round(file.size/1024);
-      } else {
-        toast('Error al subir archivo: '+upErr.message, 'err');
-      }
-    }
-    const id='doc-'+(DATA.documents.length+1);
-    await dbInsert('documents',{id,
-      name:document.getElementById('f-dname').value||(file?.name||'Sin nombre'),
-      type:document.getElementById('f-dtype').value,
-      project:document.getElementById('f-dproj').value,
-      date:new Date().toLocaleDateString('es-EC'),
-      status:document.getElementById('f-dstatus').value,
-      file_url:fileUrl, cloud_stored, size_kb});
-
-  } else if(t==='template'){
-    const fileInput=document.getElementById('f-tplfile');
-    const file=fileInput?.files[0];
-    if(!file){alert('Selecciona un archivo.');return;}
-    let fileUrl='#local';
-    if(isConnected){
-      const path=`templates/${Date.now()}_${file.name}`;
-      const { data: up, error: upErr } = await db.storage.from('buildflow-docs').upload(path, file, {upsert:true});
-      if(!upErr){
-        const { data: urlData } = db.storage.from('buildflow-docs').getPublicUrl(path);
-        fileUrl=urlData.publicUrl;
-      }
-    }
-    const id='tpl-'+(DATA.pdf_templates.length+1).toString().padStart(3,'0');
-    const is_default=document.getElementById('f-tpldefault').checked;
-    const tplType=document.getElementById('f-tpltype').value;
-    if(is_default){
-      DATA.pdf_templates.forEach(tp=>tp.is_default=false);
-      if(isConnected) await db.from('pdf_templates').update({is_default:false}).eq('type',tplType);
-    }
-    await dbInsert('pdf_templates',{id,
-      name:document.getElementById('f-tplname').value||file.name.replace(/\.[^.]+$/,''),
-      type:tplType,
-      description:document.getElementById('f-tpldesc').value,
-      file_url:fileUrl, is_default,
-      created_at:new Date().toLocaleDateString('es-EC'),
-      size_kb:Math.round(file.size/1024)});
+// ── CONFIRM DELETE ──
+function confirmDelete(table,id,label){
+  if(confirm(`¿Eliminar este ${label}? Esta acción no se puede deshacer.`)){
+    dbDelete(table,id).then(()=>{refreshNav();switchView(currentView);});
   }
-
-  closeModal();
-  refreshNav();
-  switchView(currentView);
 }
 
 // ── CALCS ──
@@ -1674,11 +1710,14 @@ function calcPayroll(){
   const e50=parseFloat(document.getElementById('f-re50')?.value)||0;
   const e100=parseFloat(document.getElementById('f-re100')?.value)||0;
   const rate=parseFloat(document.getElementById('f-rrate')?.value)||0;
-  const grossReg=hrs*rate, grossExtra=(e50*rate*1.5)+(e100*rate*2), total=grossReg+grossExtra, iess=total*0.0945;
+  const iessPct=(parseFloat(document.getElementById('f-riess')?.value)||9.45)/100;
+  const grossReg=hrs*rate,grossExtra=(e50*rate*1.5)+(e100*rate*2),total=grossReg+grossExtra,iess=total*iessPct;
   document.getElementById('calc-gross-reg').textContent=$m(grossReg);
   document.getElementById('calc-gross-extra').textContent='+'+$m(grossExtra);
   document.getElementById('calc-iess').textContent='-'+$m(iess);
   document.getElementById('calc-net').textContent=$m(total-iess);
+  const lbl=document.getElementById('calc-iess-label');
+  if(lbl)lbl.textContent=`IESS personal ${(iessPct*100).toFixed(2)}%`;
 }
 function calcExpense(){
   const sub=parseFloat(document.getElementById('f-gsub')?.value)||0;
@@ -1689,20 +1728,161 @@ function calcExpense(){
 }
 function calcQuote(){
   let sub=0;
-  for(let i=0;i<3;i++){
-    const q=parseFloat(document.getElementById('qi-qty-'+i)?.value)||0;
-    const p=parseFloat(document.getElementById('qi-price-'+i)?.value)||0;
-    sub+=q*p;
-  }
+  for(let i=0;i<3;i++){const q=parseFloat(document.getElementById('qi-qty-'+i)?.value)||0;const p=parseFloat(document.getElementById('qi-price-'+i)?.value)||0;sub+=q*p;}
   const iva=document.getElementById('f-qiva')?.checked?sub*0.15:0;
   document.getElementById('q-sub').textContent=$m(sub);
   document.getElementById('q-iva').textContent=$m(iva);
   document.getElementById('q-total').textContent=$m(sub+iva);
 }
 
-// ══════════════════════════════════════════════
-// PDF GENERATORS (idénticos al original)
-// ══════════════════════════════════════════════
+// ── SAVE MODAL ──
+async function saveModal(){
+  const t=currentModalType;const isEdit=!!editingId;
+
+  if(t==='payroll'){
+    const hrs=parseFloat(document.getElementById('f-rhours').value)||0;
+    const e50=parseFloat(document.getElementById('f-re50').value)||0;
+    const e100=parseFloat(document.getElementById('f-re100').value)||0;
+    const rate=parseFloat(document.getElementById('f-rrate').value)||0;
+    const iessPct=(parseFloat(document.getElementById('f-riess').value)||9.45)/100;
+    const gross_reg=hrs*rate,gross_e50=e50*rate*1.5,gross_e100=e100*rate*2;
+    const gross_total=gross_reg+gross_e50+gross_e100,iess=gross_total*iessPct,net=gross_total-iess;
+    const updates={period:document.getElementById('f-rperiod').value,project:document.getElementById('f-rproj').value,
+      name:document.getElementById('f-rname').value,role:document.getElementById('f-rrole').value,
+      hourly_rate:rate,hours_reg:hrs,hours_extra50:e50,hours_extra100:e100,
+      gross_reg,gross_e50,gross_e100,gross_total,iess_pct:iessPct,iess,net,
+      status:document.getElementById('f-rstatus').value};
+    if(isEdit)await dbUpdate('payroll',editingId,updates);
+    else{const id='ROL-'+(DATA.payroll.length+1).toString().padStart(3,'0');await dbInsert('payroll',{id,...updates});}
+
+  } else if(t==='expense'){
+    const subtotal=parseFloat(document.getElementById('f-gsub').value)||0;
+    const iva_applied=document.getElementById('f-giva').checked;
+    const iva=iva_applied?subtotal*0.15:0;
+    const updates={description:document.getElementById('f-gdesc').value,category:document.getElementById('f-gcat').value,
+      project:document.getElementById('f-gproj').value,invoice:document.getElementById('f-ginv').value||'—',
+      subtotal,iva_applied,iva,total:subtotal+iva,status:document.getElementById('f-gstatus').value};
+    if(isEdit)await dbUpdate('expenses',editingId,updates);
+    else{const id='GAS-'+(40+DATA.expenses.length+1).toString().padStart(4,'0');await dbInsert('expenses',{id,...updates,date:new Date().toLocaleDateString('es-EC')});}
+
+  } else if(t==='quote'){
+    let sub=0;
+    for(let i=0;i<3;i++){const q=parseFloat(document.getElementById('qi-qty-'+i)?.value)||0;const p=parseFloat(document.getElementById('qi-price-'+i)?.value)||0;sub+=q*p;}
+    const iva_applied=document.getElementById('f-qiva').checked;
+    const iva=iva_applied?sub*0.15:0;
+    const updates={client:document.getElementById('f-qclient').value,description:document.getElementById('f-qdesc').value,
+      subtotal:sub,iva,total:sub+iva,iva_applied,date:document.getElementById('f-qdate').value,
+      status:document.getElementById('f-qstatus').value};
+    if(isEdit)await dbUpdate('quotes',editingId,updates);
+    else{const id='COT-'+(DATA.quotes.length+1).toString().padStart(3,'0');await dbInsert('quotes',{id,...updates,project:null});}
+
+  } else if(t==='project'){
+    const updates={name:document.getElementById('f-pname').value,type:document.getElementById('f-ptype').value,
+      responsible:document.getElementById('f-presp').value,location:document.getElementById('f-ploc').value,
+      budget:parseFloat(document.getElementById('f-pbudget').value)||0,
+      deadline:document.getElementById('f-pdate').value,
+      progress:parseInt(document.getElementById('f-pprog').value)||0,
+      status:document.getElementById('f-pstatus').value};
+    if(isEdit)await dbUpdate('projects',editingId,updates);
+    else{const id='P'+(DATA.projects.length+1).toString().padStart(3,'0');await dbInsert('projects',{id,...updates});}
+
+  } else if(t==='task'){
+    const updates={name:document.getElementById('f-tname').value,project:document.getElementById('f-tproj').value,
+      responsible:document.getElementById('f-tresp').value,due:document.getElementById('f-tdate').value,
+      priority:document.getElementById('f-tpri').value,status:document.getElementById('f-tstatus').value};
+    if(isEdit)await dbUpdate('tasks',editingId,updates);
+    else{const id='T'+(DATA.tasks.length+1).toString().padStart(3,'0');await dbInsert('tasks',{id,...updates});}
+
+  } else if(t==='inventory'){
+    const qty=parseInt(document.getElementById('f-iqty').value)||0;
+    const updates={name:document.getElementById('f-iname').value,category:document.getElementById('f-icat').value,
+      qty,project:document.getElementById('f-iproj').value||null,date_from:document.getElementById('f-ifrom').value,
+      date_to:document.getElementById('f-ito').value||null,
+      photo_url:document.getElementById('f-iphoto').value||null,
+      status:qty===0?'out':qty<10?'low':'ok'};
+    if(isEdit)await dbUpdate('inventory',editingId,updates);
+    else{
+      const cats={Equipo:'A',Material:'M',Eléctrico:'E','Herramienta menor':'H'};
+      const cat=updates.category;
+      const id='INV-'+(cats[cat]||'X')+(DATA.inventory.length+1).toString().padStart(3,'0');
+      await dbInsert('inventory',{id,...updates});
+    }
+
+  } else if(t==='staff'){
+    const name=document.getElementById('f-sname').value;
+    const initials=name.split(' ').filter(w=>/^[A-ZÁÉÍÓÚ]/.test(w)).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'XX';
+    const updates={name,role:document.getElementById('f-srole').value,initials,
+      cedula:document.getElementById('f-sced').value,phone:document.getElementById('f-sphone').value,
+      address:document.getElementById('f-saddr').value,blood_type:document.getElementById('f-sblood').value,
+      hourly_rate:parseFloat(document.getElementById('f-shourly').value)||0,
+      status:document.getElementById('f-sstatus').value,
+      photo_url:document.getElementById('f-sphoto').value||null};
+    let staffId=editingId;
+    if(isEdit){await dbUpdate('staff',editingId,updates);}
+    else{staffId='PER-'+(DATA.staff.length+1).toString().padStart(3,'0');await dbInsert('staff',{id:staffId,...updates});}
+    // Guardar asignaciones
+    if(staffId){
+      // Eliminar asignaciones anteriores del staff
+      if(isEdit) DATA.staff_assignments=DATA.staff_assignments.filter(a=>a.staff_id!==staffId);
+      // Guardar nuevas
+      const rows=document.querySelectorAll('#assign-rows .assign-row');
+      rows.forEach((row,i)=>{
+        const idx=row.id.replace('arow-','');
+        const proj=document.getElementById('a-proj-'+idx)?.value;
+        if(!proj)return;
+        const selDays=[...row.querySelectorAll('.day-chip.selected')].map(c=>c.textContent.trim());
+        const dayNames={'Lun':'Lunes','Mar':'Martes','Mié':'Miércoles','Jue':'Jueves','Vie':'Viernes','Sáb':'Sábado','Dom':'Domingo'};
+        const workDays=selDays.map(d=>dayNames[d]||d).join(',');
+        const asgId='ASG-'+Date.now()+'-'+i;
+        const asgRow={id:asgId,staff_id:staffId,project:proj,
+          date_from:document.getElementById('a-dfrom-'+idx)?.value||null,
+          date_to:document.getElementById('a-dto-'+idx)?.value||null,
+          shift_start:document.getElementById('a-from-'+idx)?.value||'07:00',
+          shift_end:document.getElementById('a-to-'+idx)?.value||'17:00',
+          work_days:workDays};
+        DATA.staff_assignments.push(asgRow);
+        if(isConnected) db.from('staff_assignments').insert([asgRow]);
+      });
+    }
+
+  } else if(t==='doc'){
+    const fileInput=document.getElementById('doc-file-input');
+    const file=fileInput?.files[0];
+    let fileUrl=null,cloud_stored=false,size_kb=0;
+    if(file&&isConnected){
+      const path=`documents/${Date.now()}_${file.name}`;
+      const{data:up,error:upErr}=await db.storage.from('buildflow-docs').upload(path,file,{upsert:true});
+      if(!upErr){const{data:urlData}=db.storage.from('buildflow-docs').getPublicUrl(path);fileUrl=urlData.publicUrl;cloud_stored=true;size_kb=Math.round(file.size/1024);}
+    }
+    const updates={name:document.getElementById('f-dname').value||(file?.name||'Sin nombre'),
+      type:document.getElementById('f-dtype').value,project:document.getElementById('f-dproj').value,
+      status:document.getElementById('f-dstatus').value};
+    if(isEdit)await dbUpdate('documents',editingId,updates);
+    else{const id='doc-'+(DATA.documents.length+1);await dbInsert('documents',{id,...updates,file_url:fileUrl,cloud_stored,size_kb,date:new Date().toLocaleDateString('es-EC')});}
+
+  } else if(t==='bitacora_entry'){
+    const id='BIT-'+Date.now();
+    await dbInsert('bitacora',{id,
+      project:document.getElementById('f-bproj').value,
+      title:document.getElementById('f-btitle').value,
+      description:document.getElementById('f-bdesc').value,
+      photo_url:document.getElementById('f-bphoto').value||null,
+      entry_date:document.getElementById('f-bdate').value,
+      week_number:parseInt(document.getElementById('f-bweek').value)||null,
+      created_by:document.getElementById('f-bby').value});
+  }
+
+  closeModal();refreshNav();
+  // Volver a renderizar la vista actual
+  if(currentView==='obras_detail'){
+    // stay in obras_detail
+  } else {
+    switchView(currentView);
+  }
+  switchView(currentView);
+}
+
+// ══ PDF GENERATORS ══
 function generatePayrollPDF(id){
   const p=DATA.payroll.find(r=>r.id===id);if(!p)return;
   const{jsPDF}=window.jspdf;const doc=new jsPDF();
@@ -1714,7 +1894,7 @@ function generatePayrollPDF(id){
   doc.setFont('helvetica','normal');doc.setFontSize(10);
   [['Código',p.id],['Trabajador',p.name],['Cargo',p.role||''],['Proyecto',projectName(p.project)],['Período',p.period]].forEach((r,i)=>{
     doc.setFont('helvetica','bold');doc.text(r[0]+':',14,62+i*8);
-    doc.setFont('helvetica','normal');doc.text(r[1],65,62+i*8);
+    doc.setFont('helvetica','normal');doc.text(String(r[1]),65,62+i*8);
   });
   let y=104;
   doc.setFont('helvetica','bold');doc.text('DETALLE DE HORAS',14,y);y+=8;
@@ -1729,7 +1909,8 @@ function generatePayrollPDF(id){
   doc.text('Salario bruto total:',16,y+9);doc.text('$'+(p.gross_total||0).toFixed(2),155,y+9);
   doc.setTextColor(12,41,65);y+=18;
   doc.setFont('helvetica','normal');doc.setFontSize(10);
-  doc.setTextColor(214,59,59);doc.text('(-) IESS personal 9.45%:',14,y);doc.text('-$'+(p.iess||0).toFixed(2),155,y);
+  const iessPctLabel=((p.iess_pct||0.0945)*100).toFixed(2);
+  doc.setTextColor(214,59,59);doc.text(`(-) IESS personal ${iessPctLabel}%:`,14,y);doc.text('-$'+(p.iess||0).toFixed(2),155,y);
   doc.setTextColor(12,41,65);y+=8;
   doc.setFillColor(26,158,106);doc.rect(14,y,182,14,'F');
   doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);
@@ -1744,20 +1925,18 @@ function exportPayrollPDF(){
   const projFilter=document.getElementById('payroll-filter-proj')?.value||'Todos';
   const statusFilter=document.getElementById('payroll-filter-status')?.value||'';
   let rows=DATA.payroll;
-  if(projFilter!=='Todos') rows=rows.filter(p=>p.project===projFilter||projectName(p.project)===projFilter);
-  if(statusFilter) rows=rows.filter(p=>p.status===statusFilter);
+  if(projFilter!=='Todos')rows=rows.filter(p=>p.project===projFilter||projectName(p.project)===projFilter);
+  if(statusFilter)rows=rows.filter(p=>p.status===statusFilter);
   if(!rows.length){alert('Sin registros.');return;}
   const{jsPDF}=window.jspdf;const doc=new jsPDF('landscape');
   doc.setFillColor(12,41,65);doc.rect(0,0,297,36,'F');
   doc.setFontSize(18);doc.setFont('helvetica','bold');doc.setTextColor(255,165,0);doc.text('BuildFlow EC',12,15);
   doc.setFontSize(11);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');
   doc.text(projFilter==='Todos'?'NÓMINA GENERAL':'NÓMINA — '+projFilter,12,24);
-  doc.setFontSize(9);doc.setTextColor(255,165,0);
-  doc.text('Período: Mayo 2026  ·  '+new Date().toLocaleDateString('es-EC'),12,32);
   let y=44;
   doc.setFillColor(230,235,240);doc.rect(10,y,277,8,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(12,41,65);
-  [['Código',10],['Trabajador',30],['Cargo',75],['Proyecto',110],['H.Reg',145],['H.50%',158],['H.100%',170],['$/h',183],['Bruto',196],['IESS',218],['Neto',238],['Estado',261]].forEach(([l,x])=>doc.text(l,x,y+5.5));
+  [['Código',10],['Trabajador',30],['Cargo',75],['Proyecto',110],['H.Reg',145],['H.50%',158],['H.100%',170],['$/h',183],['Bruto',196],['IESS%',218],['Neto',238],['Estado',261]].forEach(([l,x])=>doc.text(l,x,y+5.5));
   y+=10;
   doc.setFont('helvetica','normal');doc.setFontSize(8);
   rows.forEach((p,i)=>{
@@ -1766,9 +1945,9 @@ function exportPayrollPDF(){
     doc.setTextColor(12,41,65);doc.text(p.name.slice(0,22),30,y+5.5);
     doc.setTextColor(80,80,80);doc.text((p.role||'').slice(0,18),75,y+5.5);doc.text(projectName(p.project).slice(0,18),110,y+5.5);
     doc.setTextColor(12,41,65);
-    doc.text((p.hours_reg||0).toString(),145,y+5.5);doc.text((p.hours_extra50||0).toString(),158,y+5.5);doc.text((p.hours_extra100||0).toString(),170,y+5.5);
+    doc.text(String(p.hours_reg||0),145,y+5.5);doc.text(String(p.hours_extra50||0),158,y+5.5);doc.text(String(p.hours_extra100||0),170,y+5.5);
     doc.text('$'+(p.hourly_rate||0).toFixed(2),183,y+5.5);doc.text('$'+(p.gross_total||0).toFixed(2),196,y+5.5);
-    doc.setTextColor(214,59,59);doc.text('-$'+(p.iess||0).toFixed(2),218,y+5.5);
+    doc.setTextColor(214,59,59);doc.text(((p.iess_pct||0.0945)*100).toFixed(1)+'%',218,y+5.5);
     doc.setTextColor(26,158,106);doc.setFont('helvetica','bold');doc.text('$'+(p.net||0).toFixed(2),238,y+5.5);
     doc.setFont('helvetica','normal');
     doc.setTextColor(...(p.status==='pagado'?[26,158,106]:[215,119,6]));doc.text(p.status,261,y+5.5);
@@ -1779,11 +1958,9 @@ function exportPayrollPDF(){
   doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,255,255);
   doc.text(`TOTALES (${rows.length})`,12,y+8);
   doc.text('$'+rows.reduce((s,p)=>s+(p.gross_total||0),0).toFixed(2),196,y+8);
-  doc.setTextColor(255,180,180);doc.text('-$'+rows.reduce((s,p)=>s+(p.iess||0),0).toFixed(2),218,y+8);
   doc.setTextColor(100,255,180);doc.text('$'+rows.reduce((s,p)=>s+(p.net||0),0).toFixed(2),238,y+8);
   doc.setTextColor(150,150,150);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
-  doc.text('Nota: Descuentos del trabajador (9.45% IESS). Aporte patronal (11.15%) va en Gastos.',12,y+20);
-  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),12,y+26);
+  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),12,y+20);
   doc.save('nomina_mayo2026.pdf');
 }
 
@@ -1791,19 +1968,14 @@ function generateQuotePDF(id){
   const q=DATA.quotes.find(c=>c.id===id);if(!q)return;
   const defaultTpl=DATA.pdf_templates.find(t=>t.is_default&&t.type==='cotizacion');
   const{jsPDF}=window.jspdf;const doc=new jsPDF();
-  if(defaultTpl){
-    doc.setFillColor(26,158,106);doc.rect(0,0,210,8,'F');
-    doc.setFontSize(7);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');
-    doc.text('Generado con plantilla: '+defaultTpl.name,5,5.5);
-  }
+  if(defaultTpl){doc.setFillColor(26,158,106);doc.rect(0,0,210,8,'F');doc.setFontSize(7);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.text('Generado con plantilla: '+defaultTpl.name,5,5.5);}
   const top=defaultTpl?8:0;
   doc.setFillColor(12,41,65);doc.rect(0,top,210,42,'F');
   doc.setFontSize(22);doc.setFont('helvetica','bold');doc.setTextColor(255,165,0);doc.text('BuildFlow EC',14,top+18);
-  doc.setFontSize(9);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');
-  doc.text('Construcción · Ecuador',14,top+27);
+  doc.setFontSize(9);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.text('Construcción · Ecuador',14,top+27);
   doc.setFontSize(15);doc.setTextColor(255,165,0);doc.setFont('helvetica','bold');doc.text('COTIZACIÓN '+q.id,130,top+18);
   doc.setFontSize(9);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');
-  doc.text('Fecha: '+q.date,130,top+27);doc.text('Validez: 30 días',130,top+35);
+  doc.text('Fecha: '+q.date,130,top+27);doc.text('Validez: '+(q.validity_days||30)+' días',130,top+35);
   const y2=top+52;
   doc.setTextColor(12,41,65);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('CLIENTE',14,y2);
   doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Nombre: '+q.client,14,y2+8);doc.text('Trabajo: '+(q.description||''),14,y2+16);
@@ -1814,7 +1986,7 @@ function generateQuotePDF(id){
   doc.setFillColor(12,41,65);doc.rect(110,y2+76,86,14,'F');
   doc.setTextColor(255,165,0);doc.setFontSize(12);doc.text('TOTAL:',112,y2+85.5);doc.text('$'+(q.total||0).toLocaleString(),160,y2+85.5);
   doc.setFontSize(8);doc.setTextColor(100,100,100);doc.setFont('helvetica','normal');
-  doc.text('Validez 30 días. Precios en USD.',14,y2+100);
+  doc.text('Validez '+(q.validity_days||30)+' días. Precios en USD.',14,y2+100);
   doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,285);
   doc.save(q.id+'_cotizacion_'+q.client.replace(/\s/g,'_')+'.pdf');
 }
@@ -1842,8 +2014,6 @@ function exportAllQuotesPDF(){
   doc.setFillColor(12,41,65);doc.rect(14,y,182,10,'F');
   doc.setTextColor(255,165,0);doc.setFont('helvetica','bold');doc.setFontSize(9);
   doc.text('TOTAL: $'+DATA.quotes.reduce((s,q)=>s+(q.total||0),0).toLocaleString(),16,y+7);
-  doc.setFontSize(7.5);doc.setTextColor(150,150,150);doc.setFont('helvetica','normal');
-  doc.text('BuildFlow EC — Administración.',14,280);
   doc.save('buildflow_cotizaciones.pdf');
 }
 
@@ -1879,23 +2049,28 @@ function generateStaffPDF(id){
   doc.setFontSize(10);doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.text('Ficha de Personal',14,32);
   doc.setTextColor(12,41,65);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text(p.name,14,65);
   doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,80,80);
-  doc.text('Cargo: '+(p.role||''),14,74);doc.text('Proyecto: '+projectName(p.project),14,82);
-  doc.text('Teléfono: '+(p.phone||''),14,90);doc.text('Jornada: '+(p.shift||''),14,98);doc.text('Estado: '+(p.status||''),14,106);
-  if(currentMode==='adm') doc.text('Tarifa: $'+(p.hourly_rate||0).toFixed(2)+'/hora',14,114);
-  doc.text('Código: '+p.id,14,122);
+  doc.text('Cargo: '+(p.role||''),14,74);
+  doc.text('Cédula: '+(p.cedula||'N/D'),14,82);
+  doc.text('Teléfono: '+(p.phone||''),14,90);
+  doc.text('Dirección: '+(p.address||''),14,98);
+  doc.text('Tipo de sangre: '+(p.blood_type||''),14,106);
+  doc.text('Estado: '+(p.status||''),14,114);
+  if(currentMode==='adm') doc.text('Tarifa: $'+(p.hourly_rate||0).toFixed(2)+'/hora',14,122);
+  const asgs=DATA.staff_assignments.filter(a=>a.staff_id===p.id);
+  if(asgs.length>0){
+    doc.setFont('helvetica','bold');doc.text('PROYECTOS ASIGNADOS:',14,132);
+    asgs.forEach((a,i)=>{
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,100,100);
+      doc.text(`${projectName(a.project)} · ${a.date_from||''}–${a.date_to||''} · ${a.shift_start||''}–${a.shift_end||''} · ${a.work_days||''}`,14,140+i*8);
+    });
+  }
   doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,285);
   doc.save(p.id+'_ficha_'+p.name.replace(/\s/g,'_')+'.pdf');
 }
 
-// ══════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════
+// ── INIT ──
 document.getElementById('modal-backdrop').addEventListener('click',function(e){if(e.target===this)closeModal();});
-
-// Verificar conexión al cargar la página
-window.addEventListener('load', async () => {
-  await checkConnection();
-});
+window.addEventListener('load',async()=>{await checkConnection();});
 </script>
 </body>
 </html>
