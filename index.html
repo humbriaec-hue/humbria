@@ -1228,10 +1228,12 @@ function renderPersonal(){
       </div>
       <div class="personal-name">${p.name}</div>
       <div class="personal-role">${p.role||''}</div>
-      ${p.blood_type?`<div style="font-size:10px;color:var(--red);margin-top:2px"><i class="ti ti-droplet" style="font-size:10px"></i> ${p.blood_type}</div>`:''}
+${isAdm?`${p.blood_type?`<div style="font-size:10px;color:var(--red);margin-top:2px"><i class="ti ti-droplet" style="font-size:10px"></i> ${p.blood_type}</div>`:''}
       <div class="personal-obra" title="${proyText}">${proyText.length>28?proyText.slice(0,28)+'…':proyText}</div>
-      ${isAdm?`<div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/h</div>`:''}
-      <span class="estado-badge e-${!p.activo?'inactivo':p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${!p.activo?'inactivo':p.status}</span>
+      <div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/h</div>
+      <span class="estado-badge e-${!p.activo?'inactivo':p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${!p.activo?'inactivo':p.status}</span>`
+      :`<div style="font-size:11px;color:var(--gray-500);margin-top:4px">${p.cedula||''}</div>
+      <div style="font-size:11px;color:var(--gray-400)">${p.address||''}</div>`}
       <div class="card-actions-row">
         <button class="btn-edit-sm" onclick="openEditModal('staff','${p.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
         <button class="btn-danger-sm" onclick="confirmDelete('staff','${p.id}','persona')"><i class="ti ti-trash" style="font-size:10px"></i></button>
@@ -1241,8 +1243,16 @@ function renderPersonal(){
 
   return `<div class="card">
     <div class="card-header"><span class="card-title">Personal en obra (${DATA.staff.filter(s=>s.activo!==false).length} activos)</span>
-    <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('staff')">+ Añadir persona</button></div>
-    ${filterActivo}
+<div style="display:flex;gap:8px;align-items:center">
+  <select class="form-select" id="nomina-proy-sel" style="font-size:11px;padding:5px 9px">
+    <option value="">Todos los proyectos</option>
+    ${DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+  </select>
+  <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportNominaOpsPDF(document.getElementById('nomina-proy-sel').value||null)">
+    <i class="ti ti-file-export"></i> Nómina PDF
+  </button>
+  <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('staff')">+ Añadir persona</button>
+</div></div>    ${filterActivo}
     <div class="grid3" id="personal-grid">${renderCards(DATA.staff.filter(s=>s.activo!==false))}</div>
   </div>`;
 }
@@ -1257,7 +1267,7 @@ function filterPersonal(tipo){
     if(btn) btn.style.color=t===tipo?'var(--orange)':'var(--gray-500)';
   });
   const isAdm=currentMode==='adm';
-  document.getElementById('personal-grid').innerHTML=staff.map(p=>{
+document.getElementById('personal-grid').innerHTML=staff.map(p=>{
     const asgs=DATA.staff_assignments.filter(a=>a.staff_id===p.id);
     const proyText=asgs.length>0?asgs.map(a=>projectName(a.project)).join(', '):'Sin asignar';
     return `<div class="personal-card">
@@ -1266,10 +1276,12 @@ function filterPersonal(tipo){
       </div>
       <div class="personal-name">${p.name}</div>
       <div class="personal-role">${p.role||''}</div>
-      ${p.blood_type?`<div style="font-size:10px;color:var(--red);margin-top:2px"><i class="ti ti-droplet" style="font-size:10px"></i> ${p.blood_type}</div>`:''}
+      ${isAdm?`${p.blood_type?`<div style="font-size:10px;color:var(--red);margin-top:2px"><i class="ti ti-droplet" style="font-size:10px"></i> ${p.blood_type}</div>`:''}
       <div class="personal-obra">${proyText.length>28?proyText.slice(0,28)+'…':proyText}</div>
-      ${isAdm?`<div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/h</div>`:''}
-      <span class="estado-badge e-${!p.activo?'inactivo':p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${!p.activo?'inactivo':p.status}</span>
+      <div class="num" style="font-size:11px;color:var(--gray-400);margin-top:3px">${$m(p.hourly_rate||0)}/h</div>
+      <span class="estado-badge e-${!p.activo?'inactivo':p.status==='presente'?'activo':p.status==='permiso'?'pendiente':'retrasado'}" style="margin-top:5px">${!p.activo?'inactivo':p.status}</span>`
+      :`<div style="font-size:11px;color:var(--gray-500);margin-top:4px">${p.cedula||''}</div>
+      <div style="font-size:11px;color:var(--gray-400)">${p.address||''}</div>`}
       <div class="card-actions-row">
         <button class="btn-edit-sm" onclick="openEditModal('staff','${p.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
         <button class="btn-danger-sm" onclick="confirmDelete('staff','${p.id}','persona')"><i class="ti ti-trash" style="font-size:10px"></i></button>
@@ -1866,8 +1878,7 @@ function buildModal(type,data,extra){
           ${['','O+','O-','A+','A-','B+','B-','AB+','AB-'].map(bt=>`<option${(p.blood_type||'')==bt?' selected':''}>${bt||'(no especificado)'}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-shourly" value="${p.hourly_rate||0}" step="0.25"></div>
-      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-sstatus">
+${currentMode==='adm'?`<div class="form-group"><label class="form-label">Tarifa por hora ($)</label><input class="form-input" type="number" id="f-shourly" value="${p.hourly_rate||0}" step="0.25"></div>`:`<input type="hidden" id="f-shourly" value="${p.hourly_rate||0}">`}      <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-sstatus">
         ${['presente','permiso','ausente'].map(v=>`<option${(p.status||'presente')===v?' selected':''}>${v}</option>`).join('')}
       </select></div>
       <div class="form-group"><label class="form-label">Activo en planilla</label><select class="form-select" id="f-sactivo">
@@ -2562,7 +2573,76 @@ function generateStaffPDF(id){
   doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,285);
   doc.save(p.id+'_ficha_'+p.name.replace(/\s/g,'_')+'.pdf');
 }
+function exportNominaOpsPDF(proyFiltro) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  let staff = DATA.staff.filter(s => s.activo !== false);
+  let titulo = 'NÓMINA COMPLETA DE PERSONAL';
+  
+  if (proyFiltro) {
+    const asgsDelProyecto = DATA.staff_assignments
+      .filter(a => a.project === proyFiltro)
+      .map(a => a.staff_id);
+    staff = staff.filter(s => asgsDelProyecto.includes(s.id));
+    titulo = 'NÓMINA — ' + projectName(proyFiltro);
+  }
 
+  // Encabezado
+  doc.setFillColor(12, 41, 65); doc.rect(0, 0, 210, 42, 'F');
+  doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 165, 0); doc.text('BuildFlow EC', 14, 18);
+  doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'normal');
+  doc.text(titulo, 14, 28);
+  doc.text('Emitido: ' + new Date().toLocaleDateString('es-EC'), 14, 36);
+
+  // Tabla encabezado
+  let y = 52;
+  doc.setFillColor(230, 235, 240); doc.rect(14, y, 182, 8, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(12, 41, 65);
+  doc.text('N°',  16, y + 5.5);
+  doc.text('Nombre completo', 26, y + 5.5);
+  doc.text('Cédula', 100, y + 5.5);
+  doc.text('Dirección', 135, y + 5.5);
+  doc.text('Firma', 175, y + 5.5);
+  y += 10;
+
+  // Filas
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  staff.forEach((p, i) => {
+    if (i % 2 === 0) {
+      doc.setFillColor(248, 250, 252); doc.rect(14, y - 1, 182, 9, 'F');
+    }
+    doc.setTextColor(100, 100, 100);
+    doc.text(String(i + 1), 16, y + 5.5);
+    doc.setTextColor(12, 41, 65); doc.setFont('helvetica', 'bold');
+    doc.text(p.name.slice(0, 30), 26, y + 5.5);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+    doc.text(p.cedula || '—', 100, y + 5.5);
+    doc.text((p.address || '—').slice(0, 24), 135, y + 5.5);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(175, y + 6, 194, y + 6);
+    y += 9;
+
+    // Nueva página si se llena
+    if (y > 270) { doc.addPage(); y = 20; }
+  });
+
+  // Footer total
+  y += 4;
+  doc.setFillColor(12, 41, 65); doc.rect(14, y, 182, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Total personal: ' + staff.length, 16, y + 7);
+
+  doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+  doc.setFont('helvetica', 'normal');
+  doc.text('BuildFlow EC · ' + new Date().toLocaleDateString('es-EC'), 14, 286);
+
+  doc.save('nomina_' + (proyFiltro ? projectName(proyFiltro).replace(/\s/g,'_') : 'completa') + '.pdf');
+}
+  
 // ── INIT ──
 document.getElementById('modal-backdrop').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 window.addEventListener('load',async()=>{ await checkConnection(); });
