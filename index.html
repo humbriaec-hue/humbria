@@ -1226,7 +1226,7 @@ function renderPersonal(){
     const proyText=asgs.length>0?asgs.map(a=>projectName(a.project)).join(', '):'Sin asignar';
     return `<div class="personal-card">
       <div class="personal-photo" style="${!p.activo?'opacity:0.5':''}">
-        ${p.photo_url?`<img src="${p.photo_url}" onerror="this.textContent='${p.initials||'??'}'">`:p.initials||'??'}
+        ${p.photo_url?`<img src="${convertirFoto(p.photo_url)}"`: onerror="this.textContent='${p.initials||'??'}'">`:p.initials||'??'}
       </div>
       <div class="personal-name">${p.name}</div>
       <div class="personal-role">${p.role||''}</div>
@@ -1274,7 +1274,7 @@ document.getElementById('personal-grid').innerHTML=staff.map(p=>{
     const proyText=asgs.length>0?asgs.map(a=>projectName(a.project)).join(', '):'Sin asignar';
     return `<div class="personal-card">
       <div class="personal-photo" style="${!p.activo?'opacity:0.5':''}">
-        ${p.photo_url?`<img src="${p.photo_url}" onerror="this.textContent='${p.initials||'??'}'">`:p.initials||'??'}
+        ${p.photo_url?`<img src="${convertirFoto(p.photo_url)}"`: onerror="this.textContent='${p.initials||'??'}'">`:p.initials||'??'}
       </div>
       <div class="personal-name">${p.name}</div>
       <div class="personal-role">${p.role||''}</div>
@@ -2292,13 +2292,23 @@ function assignRowHtml(idx,a){
 function addAssignRow(){ const c=document.getElementById('assign-rows'); if(!c) return; const d=document.createElement('div'); d.innerHTML=assignRowHtml(assignCount,{}); c.appendChild(d.firstElementChild); setTimeout(()=>{ const s=document.getElementById('a-proj-'+(assignCount-1)); },50); }
 function removeAssignRow(idx){ const el=document.getElementById('arow-'+idx); if(el) el.remove(); }
 
+function convertirFoto(url){
+  if(!url) return null;
+  var m=url.match(/\/file\/d\/([^\/]+)/);
+  if(m) return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w200';
+  var m2=url.match(/[?&]id=([^&]+)/);
+  if(m2) return 'https://drive.google.com/thumbnail?id='+m2[1]+'&sz=w200';
+  return url;
+}
+
 function previewUrlImage(inputId, imgId){
-  let url = document.getElementById(inputId)?.value || '';
-  const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if(driveMatch){
-    url = 'https://drive.google.com/uc?export=view&id=' + driveMatch[1];
-    document.getElementById(inputId).value = url;
-  }
+  const url = document.getElementById(inputId)?.value || '';
+  const converted = convertirFoto(url);
+  const img = document.getElementById(imgId);
+  if(!img) return;
+  if(converted){ img.src = converted; img.classList.add('show'); }
+  else { img.classList.remove('show'); }
+}
   const img = document.getElementById(imgId);
   if(!img) return;
   if(url){ img.src = url; img.classList.add('show'); }
