@@ -785,6 +785,8 @@ function renderView(id,extra){
 // ── KPI ──
 function kpi(){
   const gastos=DATA.expenses.filter(e=>e.tipo==='gasto').reduce((s,g)=>s+g.total,0);
+  const gastosNomina = DATA.expenses.filter(e=>e.tipo==='gasto'&&e.category==='Rol de Pago').reduce((s,g)=>s+g.total,0);
+  const gastosOp = DATA.expenses.filter(e=>e.tipo==='gasto'&&e.category!=='Rol de Pago').reduce((s,g)=>s+g.total,0);
   const ingresos=DATA.expenses.filter(e=>e.tipo==='ingreso').reduce((s,g)=>s+g.total,0);
   const nominaPend=DATA.payroll.filter(p=>p.status==='pendiente').reduce((s,p)=>s+p.net,0);
   const tareasPend=DATA.tasks.filter(t=>t.status==='pendiente').length;
@@ -1431,6 +1433,8 @@ function renderPayroll(){
           <option value="pagado">Pagados</option>
         </select>
         <select class="form-select" id="payroll-activo" onchange="filterPayroll()">
+        <input class="form-input" type="date" id="payroll-date-from" onchange="filterPayroll()">
+        <input class="form-input" type="date" id="payroll-date-to" onchange="filterPayroll()">
           <option value="">Activos e inactivos</option>
           <option value="activo">Solo activos</option>
           <option value="inactivo">Solo inactivos</option>
@@ -1489,6 +1493,10 @@ function filterPayroll(){
   const proj=document.getElementById('payroll-proj')?.value||'';
   const status=document.getElementById('payroll-status')?.value||'';
   const activo=document.getElementById('payroll-activo')?.value||'';
+  const from = document.getElementById('payroll-date-from')?.value;
+  const to = document.getElementById('payroll-date-to')?.value;
+  if(from) rows = rows.filter(p => (p.date||'') >= from);
+  if(to)   rows = rows.filter(p => (p.date||'') <= to);
   let rows=DATA.payroll;
   if(proj) rows=rows.filter(p=>p.project===proj);
   if(status) rows=rows.filter(p=>p.status===status);
@@ -1866,6 +1874,8 @@ function buildModal(type,data,extra){
       <div class="form-group"><label class="form-label">% IESS personal (ej: 9.45)</label><input class="form-input" type="number" id="f-riess" value="${iessP}" step="0.01" min="0" max="100" oninput="calcPayroll()"></div>
       <div class="form-group"><label class="form-label">Activo</label><select class="form-select" id="f-ractivo"><option value="true" ${p.activo!==false?'selected':''}>Activo</option><option value="false" ${p.activo===false?'selected':''}>Inactivo</option></select></div>
       <div class="form-group"><label class="form-label">Estado pago</label><select class="form-select" id="f-rstatus"><option value="pendiente" ${(p.status||'pendiente')==='pendiente'?'selected':''}>Pendiente</option><option value="pagado" ${p.status==='pagado'?'selected':''}>Pagado</option></select></div>
+      <div class="form-group"><label class="form-label">Fecha de pago</label>
+      <input class="form-input" type="date" id="f-rdate" value="${p.date||''}"></div>
     </div>
     <div class="calc-preview">
       <div class="calc-row"><span>Bruto regular</span><strong class="num" id="calc-gross-reg">$0.00</strong></div>
@@ -1886,7 +1896,7 @@ function buildModal(type,data,extra){
       <div class="form-group"><label class="form-label">Categoría</label><select class="form-select" id="f-gcat">
         ${isIngreso
           ?['Cobro cliente','Anticipo','Pago parcial','Otro ingreso'].map(c=>`<option${(g.category||'')==c?' selected':''}>${c}</option>`).join('')
-          :['Materiales','Mano de obra','Equipos','Transporte','Servicios','Otro'].map(c=>`<option${(g.category||'')==c?' selected':''}>${c}</option>`).join('')}
+          :['Materiales','Mano de obra','Equipos','Transporte','Servicios','Rol de Pago','Otro'].map(c=>`<option${(g.category||'')==c?' selected':''}>${c}</option>`).join('')}
       </select></div>
       <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-gproj">${pOpts()}</select></div>
       <div class="form-group"><label class="form-label">N° de factura / Ref</label><input class="form-input" id="f-ginv" value="${g.invoice||''}"></div>
@@ -2461,6 +2471,7 @@ async function saveModal(){
       role:document.getElementById('f-rrole').value,hourly_rate:rate,hours_reg:hrs,hours_extra50:e50,hours_extra100:e100,
       gross_reg,gross_e50,gross_e100,gross_total,iess_pct:iessPct,iess,net,
       status:document.getElementById('f-rstatus').value,
+      date: document.getElementById('f-rdate').value,             
       activo:document.getElementById('f-ractivo').value==='true'};
     if(isEdit) await dbUpdate('payroll',editingId,updates);
     else{ const id='ROL-'+(DATA.payroll.length+1).toString().padStart(3,'0'); await dbInsert('payroll',{id,...updates}); }
