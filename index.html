@@ -1627,7 +1627,6 @@ function renderBitacoraList_html(pid){
     <div style="flex:1">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div style="font-weight:700;font-size:12px;color:var(--navy)">${b.title||'Sin título'}</div>
-        ${b.asistencia&&b.asistencia.length>0?`<button class="btn-pdf-mini" onclick="exportAsistenciaPDF('${b.id}')"><i class="ti ti-pdf"></i> Asistencia</button>`:''}
         <button class="btn-danger-sm" onclick="confirmDelete('bitacora','${b.id}','entrada')"><i class="ti ti-trash" style="font-size:10px"></i></button>
       </div>
       <div style="font-size:11px;color:var(--orange);margin-top:2px;font-weight:600">${projectName(b.project)} · ${b.entry_date||''}</div>
@@ -1638,89 +1637,7 @@ function renderBitacoraList_html(pid){
     </div>
   </div>`).join('');
 }
-  ${b.asistencia&&b.asistencia.length>0?`
-        <div style="margin-top:6px">
-          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px">
-            <i class="ti ti-users"></i> Asistencia — ${b.asistencia.filter(a=>a.presente).length}/${b.asistencia.length} presentes
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${b.asistencia.map(a=>`<span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:${a.presente?'var(--green-bg)':'var(--gray-100)'};color:${a.presente?'var(--green)':'var(--gray-400)'}">${a.nombre.split(' ').slice(0,2).join(' ')} ${a.presente?'<span style="font-family:var(--fn)">'+a.horas_trabajadas.toFixed(1)+'h</span>':'✗'}</span>`).join('')}
-          </div>
-        </div>`:''}
-function renderAsistenciaModal(proyId){
-  const wrap=document.getElementById('bit-asistencia-list');
-  if(!wrap) return;
-  if(!proyId){
-    wrap.innerHTML='<p style="font-size:11px;color:var(--gray-400)">Selecciona un proyecto primero.</p>';
-    return;
-  }
-  const asgs=DATA.staff_assignments.filter(a=>a.project===proyId);
-  const personalProy=DATA.staff.filter(s=>s.activo!==false&&asgs.some(a=>a.staff_id===s.id));
-  if(personalProy.length===0){
-    wrap.innerHTML='<p style="font-size:11px;color:var(--gray-400)">Sin personal asignado a esta obra.</p>';
-    return;
-  }
-  wrap.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 80px 80px 60px;gap:6px;align-items:center;padding:5px 8px;background:var(--gray-100);border-radius:var(--r-sm);margin-bottom:4px">
-      <span style="font-size:10px;font-weight:700;color:var(--gray-500);font-family:var(--fd)">TRABAJADOR</span>
-      <span style="font-size:10px;font-weight:700;color:var(--gray-500);font-family:var(--fd)">ENTRADA</span>
-      <span style="font-size:10px;font-weight:700;color:var(--gray-500);font-family:var(--fd)">SALIDA</span>
-      <span style="font-size:10px;font-weight:700;color:var(--gray-500);font-family:var(--fd)">HORAS</span>
-    </div>
-    ${personalProy.map(p=>{
-      const asg=asgs.find(a=>a.staff_id===p.id);
-      return `<div style="display:grid;grid-template-columns:1fr 80px 80px 60px;gap:6px;align-items:center;padding:7px 8px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-sm);margin-bottom:4px" id="asis-row-${p.id}">
-        <div style="display:flex;align-items:center;gap:7px">
-          <input type="checkbox" id="asis-cb-${p.id}" checked style="accent-color:var(--green);width:15px;height:15px" onchange="toggleAsistenciaRow('${p.id}')">
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--navy)">${p.name}</div>
-            <div style="font-size:10px;color:var(--gray-400)">${p.role||''}</div>
-          </div>
-        </div>
-        <input type="time" id="asis-in-${p.id}" value="${asg?.shift_start||'07:00'}"
-          style="padding:4px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;width:100%"
-          onchange="calcHorasAsistencia('${p.id}')">
-        <input type="time" id="asis-out-${p.id}" value="${asg?.shift_end||'17:00'}"
-          style="padding:4px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;width:100%"
-          onchange="calcHorasAsistencia('${p.id}')">
-        <span id="asis-hrs-${p.id}" style="font-size:11px;font-weight:700;color:var(--green);font-family:var(--fn);text-align:center">10h</span>
-      </div>`;
-    }).join('')}
-    <div style="padding:7px 10px;background:var(--navy);border-radius:var(--r-sm);display:flex;justify-content:space-between;margin-top:4px">
-      <span style="font-size:11px;color:rgba(255,255,255,.6)">Presentes</span>
-      <span id="asis-total-label" style="font-size:12px;font-weight:700;color:var(--orange);font-family:var(--fn)">${personalProy.length}/${personalProy.length}</span>
-    </div>`;
-  personalProy.forEach(p=>calcHorasAsistencia(p.id));
-}
 
-function calcHorasAsistencia(staffId){
-  const inVal=document.getElementById('asis-in-'+staffId)?.value;
-  const outVal=document.getElementById('asis-out-'+staffId)?.value;
-  const lbl=document.getElementById('asis-hrs-'+staffId);
-  if(!inVal||!outVal||!lbl) return;
-  const [ih,im]=inVal.split(':').map(Number);
-  const [oh,om]=outVal.split(':').map(Number);
-  const hrs=((oh*60+om)-(ih*60+im))/60;
-  lbl.textContent=hrs>0?hrs.toFixed(1)+'h':'—';
-}
-
-function toggleAsistenciaRow(staffId){
-  const cb=document.getElementById('asis-cb-'+staffId);
-  const row=document.getElementById('asis-row-'+staffId);
-  const inEl=document.getElementById('asis-in-'+staffId);
-  const outEl=document.getElementById('asis-out-'+staffId);
-  const lbl=document.getElementById('asis-hrs-'+staffId);
-  const presente=cb?.checked;
-  if(row) row.style.opacity=presente?'1':'0.4';
-  if(inEl) inEl.disabled=!presente;
-  if(outEl) outEl.disabled=!presente;
-  if(lbl) lbl.style.color=presente?'var(--green)':'var(--gray-300)';
-  const total=document.querySelectorAll('[id^="asis-cb-"]').length;
-  const presentes=document.querySelectorAll('[id^="asis-cb-"]:checked').length;
-  const totalLbl=document.getElementById('asis-total-label');
-  if(totalLbl) totalLbl.textContent=presentes+'/'+total;
-}
-  
 // ══ MODALES ══
 let currentModalType=null,currentModalExtra=null;
 function openModal(type,extra){ currentModalType=type; currentModalExtra=extra||null; editingId=null; document.getElementById('modal-save-btn').textContent='Guardar'; buildModal(type,null,extra); document.getElementById('modal-backdrop').classList.add('open'); }
@@ -2042,22 +1959,8 @@ ${currentMode==='adm'?`<div class="form-group"><label class="form-label">Tarifa 
         </div>
       </div>
     </div>`;
-<div style="margin-top:14px">
-      <div class="form-label" style="margin-bottom:8px">Asistencia del personal</div>
-      <div id="bit-asistencia-list">
-        <p style="font-size:11px;color:var(--gray-400)">Selecciona un proyecto primero.</p>
-      </div>
-    </div>\`;
-    if(extra){
-      setTimeout(()=>{
-        const s=document.getElementById('f-bproj');
-        if(s){ s.value=extra; renderAsistenciaModal(extra); }
-      },50);
-    }
-    setTimeout(()=>{
-      const sel=document.getElementById('f-bproj');
-      if(sel) sel.addEventListener('change',e=>renderAsistenciaModal(e.target.value));
-    },80);  }
+    if(extra){ setTimeout(()=>{ const s=document.getElementById('f-bproj'); if(s) s.value=extra; },50); }
+  }
 
   else if(type==='client'){
     const c=data||{};
@@ -2435,32 +2338,13 @@ async function saveModal(){
       hideLoader();
     }
 
-    // Recoger asistencia
-    const asistencia=[];
-    DATA.staff.filter(s=>s.activo!==false).forEach(p=>{
-      const cb=document.getElementById('asis-cb-'+p.id);
-      if(!cb) return;
-      const entrada=document.getElementById('asis-in-'+p.id)?.value||null;
-      const salida=document.getElementById('asis-out-'+p.id)?.value||null;
-      const [ih,im]=(entrada||'0:0').split(':').map(Number);
-      const [oh,om]=(salida||'0:0').split(':').map(Number);
-      const horas=entrada&&salida?((oh*60+om)-(ih*60+im))/60:0;
-      asistencia.push({
-        staff_id:p.id,
-        nombre:p.name,
-        presente:cb.checked,
-        hora_entrada:cb.checked?entrada:null,
-        hora_salida:cb.checked?salida:null,
-        horas_trabajadas:cb.checked?Math.max(0,horas):0
-      });
-    });
     const id='BIT-'+Date.now();
     await dbInsert('bitacora',{id,project:document.getElementById('f-bproj').value,
       title:document.getElementById('f-btitle').value,description:document.getElementById('f-bdesc').value,
       photo_url:photoUrl,entry_date:document.getElementById('f-bdate').value,
       week_number:parseInt(document.getElementById('f-bweek').value)||null,
       created_by:document.getElementById('f-bby').value,
-      task_ids:selectedTasks,inv_uso:invUso,asistencia:asistencia});
+      task_ids:selectedTasks,inv_uso:invUso});
 
   } else if(t==='client'){
     const updates={name:document.getElementById('f-cname').value,ruc:document.getElementById('f-cruc').value,
@@ -2704,53 +2588,6 @@ function exportNominaOpsPDF(proyFiltro) {
     titulo = 'NÓMINA — ' + projectName(proyFiltro);
   }
 
-  function exportAsistenciaPDF(bitId){
-  const b=DATA.bitacora.find(x=>x.id===bitId);
-  if(!b||!b.asistencia||!b.asistencia.length){ toast('Sin datos de asistencia','err'); return; }
-  const{jsPDF}=window.jspdf; const doc=new jsPDF();
-  doc.setFillColor(12,41,65); doc.rect(0,0,210,42,'F');
-  doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.setTextColor(255,165,0); doc.text('BuildFlow EC — Asistencia',14,18);
-  doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
-  doc.text(projectName(b.project)+' · '+b.entry_date,14,27);
-  doc.text(b.title||'',14,35);
-  let y=52;
-  doc.setFillColor(230,235,240); doc.rect(14,y,182,8,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(12,41,65);
-  doc.text('Trabajador',16,y+5.5);
-  doc.text('Entrada',110,y+5.5);
-  doc.text('Salida',135,y+5.5);
-  doc.text('Horas',158,y+5.5);
-  doc.text('Firma',175,y+5.5);
-  y+=10;
-  doc.setFont('helvetica','normal');
-  b.asistencia.forEach((a,i)=>{
-    if(i%2===0){ doc.setFillColor(248,250,252); doc.rect(14,y-1,182,9,'F'); }
-    doc.setTextColor(a.presente?12:180,a.presente?41:180,a.presente?65:180);
-    doc.setFont('helvetica',a.presente?'bold':'normal');
-    doc.text(a.nombre.slice(0,35),16,y+5.5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text(a.hora_entrada||'—',110,y+5.5);
-    doc.text(a.hora_salida||'—',135,y+5.5);
-    doc.setTextColor(a.presente?26:180,a.presente?158:180,a.presente?106:180);
-    doc.setFont('helvetica','bold');
-    doc.text(a.presente?a.horas_trabajadas.toFixed(1)+'h':'Ausente',158,y+5.5);
-    if(a.presente){ doc.setDrawColor(180,180,180); doc.line(175,y+6,194,y+6); }
-    y+=9;
-    if(y>270){ doc.addPage(); y=20; }
-  });
-  y+=4;
-  const presentes=b.asistencia.filter(a=>a.presente).length;
-  const totalHrs=b.asistencia.reduce((s,a)=>s+(a.horas_trabajadas||0),0);
-  doc.setFillColor(12,41,65); doc.rect(14,y,182,12,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
-  doc.text('Presentes: '+presentes+'/'+b.asistencia.length,16,y+8);
-  doc.setTextColor(255,165,0);
-  doc.text('Total horas: '+totalHrs.toFixed(1)+'h',130,y+8);
-  doc.setFontSize(7); doc.setTextColor(150,150,150); doc.setFont('helvetica','normal');
-  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,286);
-  doc.save('asistencia_'+b.entry_date+'_'+projectName(b.project).replace(/\s/g,'_')+'.pdf');
-}
   // Encabezado
   doc.setFillColor(12, 41, 65); doc.rect(0, 0, 210, 42, 'F');
   doc.setFontSize(18); doc.setFont('helvetica', 'bold');
