@@ -576,20 +576,21 @@ async function loadAllData(){
   if(!isConnected) return;
   try {
     const fetches = await Promise.all([
-      db.from('projects').select('*').order('id'),
-      db.from('tasks').select('*').order('id'),
-      db.from('payroll').select('*').order('id'),
-      db.from('expenses').select('*').order('id'),
-      db.from('inventory').select('*').order('id'),
-      db.from('staff').select('*').order('id'),
-      db.from('staff_assignments').select('*').order('id'),
-      db.from('quotes').select('*').order('id'),
-      db.from('pdf_templates').select('*').order('id'),
-      db.from('bitacora').select('*').order('entry_date',{ascending:false}),
-      db.from('clients').select('*').order('id'),
-      db.from('inv_movimientos').select('*').order('date',{ascending:false}),
-    ]);
-    const keys=['projects','tasks','payroll','expenses','inventory','staff','staff_assignments','quotes','pdf_templates','bitacora','clients','inv_movimientos'];
+  db.from('projects').select('*').order('id'),
+  db.from('tasks').select('*').order('id'),
+  db.from('payroll').select('*').order('id'),
+  db.from('expenses').select('*').order('id'),
+  db.from('inventory').select('*').order('id'),
+  db.from('staff').select('*').order('id'),
+  db.from('staff_assignments').select('*').order('id'),
+  db.from('quotes').select('*').order('id'),
+  db.from('pdf_templates').select('*').order('id'),
+  db.from('bitacora').select('*').order('entry_date',{ascending:false}),
+  db.from('clients').select('*').order('id'),
+  db.from('inv_movimientos').select('*').order('date',{ascending:false}),
+  db.from('attendance').select('*').order('date',{ascending:false}),
+]);
+const keys=['projects','tasks','payroll','expenses','inventory','staff','staff_assignments','quotes','pdf_templates','bitacora','clients','inv_movimientos','attendance'];
     fetches.forEach(({data,error},i)=>{ if(!error&&data&&data.length>0) DATA[keys[i]]=data; });
     toast('Datos cargados desde Supabase','ok');
   } catch(e){ toast('Error al cargar: '+e.message,'err'); }
