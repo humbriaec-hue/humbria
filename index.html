@@ -1599,7 +1599,7 @@ async function deleteTemplate(id){
 
 // ── BITÁCORA ──
 // Nuevas funciones: seleccionar tarea (la tacha), registrar uso de inventario (descuenta), subir foto real a Supabase
-ffunction renderBitacora(){
+function renderBitacora(){
   return `<div style="display:flex;gap:8px;margin-bottom:12px">
     <button class="btn-ghost" id="tab-bit" style="font-size:11px;padding:5px 12px;border-color:var(--orange);color:var(--orange)" onclick="switchBitTab('bit')">Entradas</button>
     <button class="btn-ghost" id="tab-att" style="font-size:11px;padding:5px 12px" onclick="switchBitTab('att')">Asistencia</button>
