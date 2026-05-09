@@ -565,7 +565,8 @@ const LOCAL = {
   pdf_templates:[
     {id:'tpl-001',name:'Membrete Corporativo v2',type:'cotizacion',description:'Logo + datos empresariales',file_url:'#',is_default:true,created_at:'2026-04-10',size_kb:210},
   ],
-  bitacora:[]
+  bitacora:[],
+  attendance:[],
 };
 
 let DATA = JSON.parse(JSON.stringify(LOCAL));
@@ -1597,7 +1598,25 @@ async function deleteTemplate(id){
 
 // ── BITÁCORA ──
 // Nuevas funciones: seleccionar tarea (la tacha), registrar uso de inventario (descuenta), subir foto real a Supabase
-function renderBitacora(){
+ffunction renderBitacora(){
+  return `<div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn-ghost" id="tab-bit" style="font-size:11px;padding:5px 12px;border-color:var(--orange);color:var(--orange)" onclick="switchBitTab('bit')">Entradas</button>
+    <button class="btn-ghost" id="tab-att" style="font-size:11px;padding:5px 12px" onclick="switchBitTab('att')">Asistencia</button>
+  </div>
+  <div id="bit-tab-bit">${renderBitacoraTab()}</div>
+  <div id="bit-tab-att" style="display:none">${renderAttendanceTab()}</div>`;
+}
+
+function switchBitTab(tab){
+  document.getElementById('bit-tab-bit').style.display=tab==='bit'?'block':'none';
+  document.getElementById('bit-tab-att').style.display=tab==='att'?'block':'none';
+  document.getElementById('tab-bit').style.borderColor=tab==='bit'?'var(--orange)':'var(--gray-200)';
+  document.getElementById('tab-bit').style.color=tab==='bit'?'var(--orange)':'var(--gray-500)';
+  document.getElementById('tab-att').style.borderColor=tab==='att'?'var(--orange)':'var(--gray-200)';
+  document.getElementById('tab-att').style.color=tab==='att'?'var(--orange)':'var(--gray-500)';
+}
+
+function renderBitacoraTab(){
   return `<div class="card">
     <div class="card-header">
       <div><span class="card-title">Bitácora de obra</span><div style="margin-top:4px;font-size:11px;color:var(--gray-400)">${DATA.bitacora.length} entradas registradas</div></div>
@@ -1611,6 +1630,160 @@ function renderBitacora(){
     </div>
     <div id="bitacora-list">${renderBitacoraList_html('')}</div>
   </div>`;
+}
+
+function renderAttendanceTab(){
+  // Agrupar por persona
+  const resumen={};
+  DATA.attendance.forEach(a=>{
+    if(!resumen[a.staff_id]) resumen[a.staff_id]={total:0,dias:0,registros:[]};
+    resumen[a.staff_id].total+=a.hours||0;
+    resumen[a.staff_id].dias++;
+    resumen[a.staff_id].registros.push(a);
+  });
+
+  const proyectos=DATA.projects;
+  const hasDatos=DATA.attendance.length>0;
+
+  return `<div class="card">
+    <div class="card-header">
+      <span class="card-title">Resumen de asistencia</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="form-select" id="att-proj-filter" style="font-size:11px;padding:5px 9px" onchange="renderAttTable()">
+          <option value="">Todos los proyectos</option>
+          ${proyectos.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+        </select>
+        <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportAttendancePDF()"><i class="ti ti-file-export"></i> PDF</button>
+      </div>
+    </div>
+    <div id="att-table-wrap">
+      ${hasDatos?renderAttTableHtml(''):
+      `<div style="text-align:center;padding:40px;color:var(--gray-400)">
+        <i class="ti ti-clipboard-list" style="font-size:32px;display:block;margin-bottom:8px"></i>
+        <p style="font-size:12px">Sin registros de asistencia aún.<br>Se generan automáticamente al guardar una bitácora.</p>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+function renderAttTable(){
+  const pid=document.getElementById('att-proj-filter')?.value||'';
+  document.getElementById('att-table-wrap').innerHTML=renderAttTableHtml(pid);
+}
+
+function renderAttTableHtml(pid){
+  let registros=DATA.attendance;
+  if(pid) registros=registros.filter(a=>a.project===pid);
+  if(!registros.length) return '<p style="color:var(--gray-400);font-size:12px;padding:16px 0">Sin registros para los filtros aplicados.</p>';
+
+  // Agrupar por persona
+  const byStaff={};
+  registros.forEach(a=>{
+    if(!byStaff[a.staff_id]) byStaff[a.staff_id]={dias:[],totalHrs:0};
+    byStaff[a.staff_id].dias.push(a);
+    byStaff[a.staff_id].totalHrs+=a.hours||0;
+  });
+
+  let html=`<table><thead><tr>
+    <th>Persona</th><th>Cargo</th>
+    <th style="text-align:center">Días</th>
+    <th style="text-align:center">Horas reg. (calc.)</th>
+    <th>Último registro</th>
+    <th>Acc.</th>
+  </tr></thead><tbody>`;
+
+  Object.entries(byStaff).forEach(([sid,data])=>{
+    const p=DATA.staff.find(s=>s.id===sid);
+    const ultimo=data.dias.sort((a,b)=>b.date.localeCompare(a.date))[0];
+    html+=`<tr>
+      <td style="font-weight:600;color:var(--navy)">${p?p.name:sid}</td>
+      <td style="font-size:11px;color:var(--gray-500)">${p?p.role||'':''}</td>
+      <td class="num-cell" style="text-align:center">${data.dias.length}</td>
+      <td class="num-cell" style="text-align:center;color:var(--green);font-weight:500">${data.totalHrs.toFixed(1)}h</td>
+      <td style="font-size:11px">${ultimo?`${ultimo.date} · ${ultimo.time_in}–${ultimo.time_out}`:''}</td>
+      <td><button class="btn-edit-sm" onclick="showAttDetail('${sid}')"><i class="ti ti-list" style="font-size:10px"></i> Detalle</button></td>
+    </tr>`;
+  });
+
+  const totalHrs=registros.reduce((s,a)=>s+(a.hours||0),0);
+  html+=`</tbody><tfoot><tr>
+    <td colspan="2" style="font-weight:700;font-family:var(--fd);font-size:11px;color:var(--navy);padding:10px 9px">TOTALES (${Object.keys(byStaff).length} personas)</td>
+    <td class="num-cell" style="text-align:center;font-weight:500">${registros.length}</td>
+    <td class="num-cell" style="text-align:center;color:var(--green);font-weight:500;font-size:14px">${totalHrs.toFixed(1)}h</td>
+    <td colspan="2"></td>
+  </tr></tfoot></table>`;
+  return html;
+}
+
+function showAttDetail(staffId){
+  const p=DATA.staff.find(s=>s.id===staffId);
+  const registros=DATA.attendance.filter(a=>a.staff_id===staffId).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('modal-title').textContent='Detalle de asistencia — '+(p?p.name:staffId);
+  document.getElementById('modal-box').className='modal';
+  document.getElementById('modal-body').innerHTML=`
+    <table><thead><tr><th>Fecha</th><th>Proyecto</th><th>Entrada</th><th>Salida</th><th style="text-align:right">Horas</th></tr></thead>
+    <tbody>${registros.map(r=>`<tr>
+      <td>${r.date||'—'}</td>
+      <td style="font-size:11px">${projectName(r.project)}</td>
+      <td class="num-cell">${r.time_in||'—'}</td>
+      <td class="num-cell">${r.time_out||'—'}</td>
+      <td class="num-cell" style="text-align:right;color:var(--green)">${(r.hours||0).toFixed(1)}h</td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="4" style="font-weight:700;font-family:var(--fd);padding:8px 9px">Total</td>
+      <td class="num-cell" style="text-align:right;color:var(--green);font-size:14px">${registros.reduce((s,r)=>s+(r.hours||0),0).toFixed(1)}h</td>
+    </tr></tfoot></table>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function exportAttendancePDF(){
+  const pid=document.getElementById('att-proj-filter')?.value||'';
+  let registros=DATA.attendance;
+  if(pid) registros=registros.filter(a=>a.project===pid);
+  if(!registros.length){ toast('Sin registros de asistencia','err'); return; }
+
+  const{jsPDF}=window.jspdf; const doc=new jsPDF();
+  doc.setFillColor(12,41,65); doc.rect(0,0,210,42,'F');
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('BuildFlow EC',14,18);
+  doc.setFontSize(10); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
+  doc.text('REPORTE DE ASISTENCIA'+(pid?' — '+projectName(pid):''),14,28);
+  doc.text('Emitido: '+new Date().toLocaleDateString('es-EC'),14,36);
+
+  // Agrupar por persona
+  const byStaff={};
+  registros.forEach(a=>{
+    if(!byStaff[a.staff_id]) byStaff[a.staff_id]=[];
+    byStaff[a.staff_id].push(a);
+  });
+
+  let y=52;
+  Object.entries(byStaff).forEach(([sid,regs])=>{
+    const p=DATA.staff.find(s=>s.id===sid);
+    const totalHrs=regs.reduce((s,r)=>s+(r.hours||0),0);
+    doc.setFillColor(230,235,240); doc.rect(14,y,182,10,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(12,41,65);
+    doc.text((p?p.name:sid)+' — '+totalHrs.toFixed(1)+'h total',16,y+7);
+    y+=12;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    regs.sort((a,b)=>a.date.localeCompare(b.date)).forEach((r,i)=>{
+      if(i%2===0){ doc.setFillColor(250,251,252); doc.rect(14,y-1,182,7,'F'); }
+      doc.setTextColor(80,80,80);
+      doc.text(r.date||'',16,y+4.5);
+      doc.text(projectName(r.project).slice(0,20),50,y+4.5);
+      doc.text((r.time_in||'')+'–'+(r.time_out||''),130,y+4.5);
+      doc.setTextColor(26,158,106); doc.setFont('helvetica','bold');
+      doc.text((r.hours||0).toFixed(1)+'h',180,y+4.5);
+      doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+      y+=7;
+    });
+    y+=4;
+    if(y>265){ doc.addPage(); y=20; }
+  });
+
+  doc.setFontSize(7); doc.setTextColor(150,150,150);
+  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,286);
+  doc.save('asistencia_'+(pid?projectName(pid).replace(/\s/g,'_'):'general')+'.pdf');
 }
 function renderBitacoraList(){
   const pid=document.getElementById('bit-proj-filter')?.value||'';
@@ -1908,14 +2081,31 @@ ${currentMode==='adm'?`<div class="form-group"><label class="form-label">Tarifa 
   else if(type==='bitacora_entry'){
     const tareasProy=extra?DATA.tasks.filter(t=>t.project===extra&&t.status!=='completado'):DATA.tasks.filter(t=>t.status!=='completado');
     const materiales=DATA.inventory.filter(i=>i.type==='material'&&i.qty>0);
+    const proyId=extra||'';
+    // Personal del proyecto (o todo si no hay filtro)
+    const personalDisp = proyId
+      ? DATA.staff.filter(s=>s.activo!==false&&DATA.staff_assignments.some(a=>a.staff_id===s.id&&a.project===proyId))
+      : DATA.staff.filter(s=>s.activo!==false);
+
     body.innerHTML=`
     <div class="form-grid col2">
       <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="f-btitle" placeholder="Ej: Avance semana 18"></div>
-      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-bproj"><option value="">Seleccionar…</option>${pOpts()}</select></div>
+      <div class="form-group"><label class="form-label">Proyecto</label><select class="form-select" id="f-bproj" onchange="refreshAttendanceList()"><option value="">Seleccionar…</option>${pOpts()}</select></div>
       <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="f-bdate" value="${new Date().toISOString().split('T')[0]}"></div>
       <div class="form-group"><label class="form-label">Semana N°</label><input class="form-input" type="number" id="f-bweek" placeholder="Ej: 18"></div>
       <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción de actividades</label><textarea class="form-input" id="f-bdesc" style="min-height:80px" placeholder="Describe lo que se hizo…"></textarea></div>
       <div class="form-group"><label class="form-label">Registrado por</label><input class="form-input" id="f-bby" placeholder="Nombre de quien reporta"></div>
+    </div>
+
+    <!-- ASISTENCIA DEL DÍA -->
+    <div style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="form-label" style="margin:0">Asistencia del día</div>
+        <span style="font-size:10px;color:var(--gray-400)">Marca los presentes e ingresa entrada/salida</span>
+      </div>
+      <div id="attendance-list" style="display:grid;gap:6px">
+        ${buildAttendanceRows(personalDisp)}
+      </div>
     </div>
 
     <div style="margin-top:14px">
@@ -1981,7 +2171,79 @@ ${currentMode==='adm'?`<div class="form-group"><label class="form-label">Tarifa 
 function toggleTareaCheck(id,el){
   el.classList.toggle('done');
 }
+// ── ASISTENCIA ──
+function buildAttendanceRows(personal){
+  if(!personal||personal.length===0) return '<p style="font-size:11px;color:var(--gray-400)">Sin personal asignado al proyecto.</p>';
+  return personal.map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--gray-50);border-radius:var(--r-sm);border:1px solid var(--gray-200)">
+      <input type="checkbox" id="att-cb-${p.id}" style="accent-color:var(--orange);flex-shrink:0;width:15px;height:15px" onchange="toggleAttendanceRow('${p.id}')">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--navy)">${p.name}</div>
+        <div style="font-size:10px;color:var(--gray-400)">${p.role||''}</div>
+      </div>
+      <div id="att-times-${p.id}" style="display:none;align-items:center;gap:6px">
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--gray-400);margin-bottom:2px">ENTRADA</div>
+          <input type="time" id="att-in-${p.id}" value="07:00" style="padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;width:82px;font-family:var(--fn)" oninput="calcHours('${p.id}')">
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--gray-400);margin-bottom:2px">SALIDA</div>
+          <input type="time" id="att-out-${p.id}" value="17:00" style="padding:3px 6px;border:1px solid var(--gray-200);border-radius:4px;font-size:11px;width:82px;font-family:var(--fn)" oninput="calcHours('${p.id}')">
+        </div>
+        <div style="text-align:center;min-width:52px">
+          <div style="font-size:9px;color:var(--gray-400);margin-bottom:2px">HORAS</div>
+          <div id="att-hrs-${p.id}" style="font-family:var(--fn);font-size:13px;font-weight:500;color:var(--green)">8.0h</div>
+        </div>
+      </div>
+      <div id="att-absent-${p.id}" style="font-size:10px;color:var(--gray-300)">— ausente</div>
+    </div>`).join('');
+}
 
+function toggleAttendanceRow(pid){
+  const checked=document.getElementById('att-cb-'+pid)?.checked;
+  const timesEl=document.getElementById('att-times-'+pid);
+  const absentEl=document.getElementById('att-absent-'+pid);
+  if(timesEl) timesEl.style.display=checked?'flex':'none';
+  if(absentEl) absentEl.style.display=checked?'none':'block';
+  if(checked) calcHours(pid);
+}
+
+function calcHours(pid){
+  const inVal=document.getElementById('att-in-'+pid)?.value||'07:00';
+  const outVal=document.getElementById('att-out-'+pid)?.value||'17:00';
+  const [ih,im]=inVal.split(':').map(Number);
+  const [oh,om]=outVal.split(':').map(Number);
+  const hrs=((oh*60+om)-(ih*60+im))/60;
+  const el=document.getElementById('att-hrs-'+pid);
+  if(el){
+    el.textContent=(hrs>0?hrs:0).toFixed(1)+'h';
+    el.style.color=hrs<=0?'var(--red)':'var(--green)';
+  }
+}
+
+function refreshAttendanceList(){
+  const pid=document.getElementById('f-bproj')?.value||'';
+  const personal = pid
+    ? DATA.staff.filter(s=>s.activo!==false&&DATA.staff_assignments.some(a=>a.staff_id===s.id&&a.project===pid))
+    : DATA.staff.filter(s=>s.activo!==false);
+  const el=document.getElementById('attendance-list');
+  if(el) el.innerHTML=buildAttendanceRows(personal);
+}
+
+function calcHoursFromTimes(inTime, outTime){
+  const [ih,im]=inTime.split(':').map(Number);
+  const [oh,om]=outTime.split(':').map(Number);
+  const hrs=((oh*60+om)-(ih*60+im))/60;
+  return hrs>0?parseFloat(hrs.toFixed(2)):0;
+}
+
+// Suma horas de asistencia de una persona en un período (para el rol de pago)
+function getAttendanceHours(staffId, projectId, period){
+  return DATA.attendance
+    .filter(a=>a.staff_id===staffId&&(!projectId||a.project===projectId)&&(!period||a.period===period))
+    .reduce((s,a)=>s+(a.hours||0),0);
+}
+  
 function previewBitacoraPhoto(input){
   const f=input.files[0]; if(!f) return;
   document.getElementById('bit-upload-label').textContent=f.name.slice(0,20);
@@ -2338,6 +2600,32 @@ async function saveModal(){
       hideLoader();
     }
 
+    // Registrar asistencia del día
+    const period=`${new Date().toLocaleString('es-EC',{month:'long',year:'numeric'})}`;
+    const fecha=document.getElementById('f-bdate').value;
+    const proyId=document.getElementById('f-bproj').value;
+    DATA.staff.filter(s=>s.activo!==false).forEach(p=>{
+      const cb=document.getElementById('att-cb-'+p.id);
+      if(cb&&cb.checked){
+        const inTime=document.getElementById('att-in-'+p.id)?.value||'07:00';
+        const outTime=document.getElementById('att-out-'+p.id)?.value||'17:00';
+        const hours=calcHoursFromTimes(inTime,outTime);
+        const attRow={
+          id:'ATT-'+Date.now()+'-'+p.id,
+          staff_id:p.id,
+          project:proyId,
+          date:fecha,
+          period,
+          time_in:inTime,
+          time_out:outTime,
+          hours,
+          created_by:document.getElementById('f-bby').value||'',
+          bitacora_id:'BIT-'+Date.now()
+        };
+        dbInsert('attendance',attRow);
+      }
+    });
+    
     const id='BIT-'+Date.now();
     await dbInsert('bitacora',{id,project:document.getElementById('f-bproj').value,
       title:document.getElementById('f-btitle').value,description:document.getElementById('f-bdesc').value,
