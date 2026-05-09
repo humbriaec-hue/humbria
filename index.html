@@ -2026,11 +2026,101 @@ function previewUrlImage(inputId,imgId){
 
 // ── CONFIRM DELETE ──
 function confirmDelete(table,id,label){
+  if(table === 'bitacora'){
+    revertirBitacora(id);
+    return;
+  }
   if(confirm(`¿Eliminar este ${label}? Esta acción no se puede deshacer.`)){
     dbDelete(table,id).then(()=>{ refreshNav(); switchView(currentView); });
   }
 }
 
+// ── REVERTIR BITÁCORA ──
+// Al eliminar una bitácora:
+// 1. Revierte sus tareas asociadas a "pendiente"
+// 2. Repone el stock de materiales usados
+// 3. Recalcula el avance de la obra (basado en tareas completadas restantes)
+async function revertirBitacora(id){
+  const entrada = DATA.bitacora.find(b => b.id === id);
+  if (!entrada) { toast('Entrada no encontrada', 'err'); return; }
+
+  const proyNombre = projectName(entrada.project);
+  const tareaIds = entrada.task_ids || [];
+  const invUso   = entrada.inv_uso   || [];
+
+  // Construir resumen de lo que se va a revertir
+  let resumen = `¿Eliminar la bitácora "${entrada.title || 'sin título'}"?\n\nEsto revertirá:\n`;
+  if (tareaIds.length > 0) {
+    const nombres = tareaIds.map(tid => {
+      const t = DATA.tasks.find(t => t.id === tid);
+      return t ? '  • ' + t.name : '  • (tarea eliminada)';
+    }).join('\n');
+    resumen += `\n${tareaIds.length} tarea(s) → vuelven a "pendiente":\n${nombres}\n`;
+  }
+  if (invUso.length > 0) {
+    const lineas = invUso.map(u => {
+      const it = DATA.inventory.find(i => i.id === u.inv_id);
+      return it ? `  • ${it.name}: +${u.qty} al stock` : `  • (ítem ${u.inv_id}): +${u.qty}`;
+    }).join('\n');
+    resumen += `\n${invUso.length} material(es) → stock repuesto:\n${lineas}\n`;
+  }
+  if (tareaIds.length === 0 && invUso.length === 0) {
+    resumen += '  (sin tareas ni materiales asociados)\n';
+  }
+  resumen += '\nEsta acción no se puede deshacer.';
+
+  if (!confirm(resumen)) return;
+
+  showLoader('Revirtiendo bitácora…');
+
+  // 1. Revertir tareas → "pendiente"
+  for (const tid of tareaIds) {
+    const tarea = DATA.tasks.find(t => t.id === tid);
+    if (tarea && tarea.status === 'completado') {
+      await dbUpdate('tasks', tid, { status: 'pendiente' });
+    }
+  }
+
+  // 2. Reponer stock de materiales usados
+  for (const uso of invUso) {
+    const item = DATA.inventory.find(i => i.id === uso.inv_id);
+    if (item) {
+      const nuevoQty = item.qty + (uso.qty || 0);
+      const nuevoStatus = nuevoQty === 0 ? 'out' : nuevoQty < 10 ? 'low' : 'ok';
+      await dbUpdate('inventory', uso.inv_id, { qty: nuevoQty, status: nuevoStatus });
+      // Registrar movimiento inverso (entrada)
+      await dbInsert('inv_movimientos', {
+        id: 'MOV-REV-' + Date.now() + '-' + uso.inv_id,
+        inv_id: uso.inv_id,
+        tipo: 'entrada',
+        qty: uso.qty,
+        motivo: 'Reversión bitácora: ' + (entrada.title || id),
+        date: new Date().toISOString().split('T')[0],
+        created_by: 'Sistema (reversión)'
+      });
+    }
+  }
+
+  // 3. Recalcular avance de la obra según tareas completadas restantes
+  if (entrada.project) {
+    const todasTareas      = DATA.tasks.filter(t => t.project === entrada.project);
+    const completadasAhora = todasTareas.filter(t => t.status === 'completado').length;
+    const nuevoAvance      = todasTareas.length > 0
+      ? Math.round((completadasAhora / todasTareas.length) * 100)
+      : 0;
+    await dbUpdate('projects', entrada.project, { progress: nuevoAvance });
+    toast(`Avance de "${proyNombre}" recalculado: ${nuevoAvance}%`, 'info');
+  }
+
+  // 4. Eliminar la bitácora
+  await dbDelete('bitacora', id);
+
+  hideLoader();
+  refreshNav();
+  toast('Bitácora revertida correctamente', 'ok');
+  switchView(currentView);
+}
+  
 // ── CALCS ──
 function calcPayroll(){
   const hrs=parseFloat(document.getElementById('f-rhours')?.value)||0;
