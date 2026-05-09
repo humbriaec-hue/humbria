@@ -2292,10 +2292,17 @@ function assignRowHtml(idx,a){
 function addAssignRow(){ const c=document.getElementById('assign-rows'); if(!c) return; const d=document.createElement('div'); d.innerHTML=assignRowHtml(assignCount,{}); c.appendChild(d.firstElementChild); setTimeout(()=>{ const s=document.getElementById('a-proj-'+(assignCount-1)); },50); }
 function removeAssignRow(idx){ const el=document.getElementById('arow-'+idx); if(el) el.remove(); }
 
-function previewUrlImage(inputId,imgId){
-  const url=document.getElementById(inputId)?.value||'';
-  const img=document.getElementById(imgId); if(!img) return;
-  if(url){ img.src=url; img.classList.add('show'); } else { img.classList.remove('show'); }
+function previewUrlImage(inputId, imgId){
+  let url = document.getElementById(inputId)?.value || '';
+  const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if(driveMatch){
+    url = 'https://drive.google.com/uc?export=view&id=' + driveMatch[1];
+    document.getElementById(inputId).value = url;
+  }
+  const img = document.getElementById(imgId);
+  if(!img) return;
+  if(url){ img.src = url; img.classList.add('show'); }
+  else { img.classList.remove('show'); }
 }
 
 // ── CONFIRM DELETE ──
