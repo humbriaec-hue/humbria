@@ -329,7 +329,7 @@ textarea.form-input{resize:vertical;min-height:70px}
 
 <div id="toast"></div>
 <div id="global-loader"><div class="loader-box"><i class="ti ti-loader"></i><p id="loader-msg">Conectando…</p></div></div>
-<div id="conn-status" class="connecting"><i class="ti ti-cloud" style="font-size:11px"></i><span id="conn-text">Conectando…</span></div>
+<div id="conn-status" class="online" style="display:none"><i class="ti ti-cloud" style="font-size:11px"></i><span id="conn-text">Conectando…</span></div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -748,10 +748,14 @@ async function initApp(mode){
     document.getElementById('btn-report').style.display='none';
   }
   buildNav(mode);
-  showLoader('Conectando a base de datos…');
+ showLoader('Cargando datos…');
+try {
   await checkConnection();
   await loadAllData();
-  hideLoader();  switchView('dashboard');
+} catch(e) {
+  toast('Error de conexión — usando datos locales', 'err');
+} finally {
+  hideLoader(); switchView('dashboard');
 }
 function refreshNav(){ if(currentMode) buildNav(currentMode); }
 
@@ -3223,8 +3227,7 @@ function exportNominaVisitaPDF(proyFiltro) {
 // ── INIT ──
 document.getElementById('modal-backdrop').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 window.addEventListener('load', function(){
-  setConnStatus('online','Listo');
-  document.getElementById('conn-status').style.display='none';
+  // No hacer nada al cargar — la conexión se verifica al hacer login
 });
 </script>
 </body>
