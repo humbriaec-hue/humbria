@@ -3214,7 +3214,7 @@ function exportNominaVisitaPDF(proyFiltro) {
   
 // ── INIT ──
 document.getElementById('modal-backdrop').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-window.addEventListener('load',async()=>{ await checkConnection(); });
+window.addEventListener('load', function(){ checkConnection(); });
 </script>
 </body>
 </html>
