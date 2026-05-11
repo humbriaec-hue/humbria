@@ -427,7 +427,7 @@ textarea.form-input{resize:vertical;min-height:70px}
         <span class="bc-tag" id="project-tag">BuildFlow EC ▾</span>
       </div>
       <div class="tb-right">
-        <button class="btn-ghost" id="btn-report" onclick="generateClientReport()" style="display:none">
+        <button class="btn-ghost" id="btn-pdf-mini" onclick="generateClientReportById('${c.id}')" style="display:none">
           <i class="ti ti-file-export" style="font-size:13px;vertical-align:-2px"></i> Reporte Cliente
         </button>
         <button class="btn-primary" onclick="openNewModal()">+ Nuevo</button>
@@ -2835,29 +2835,542 @@ function generateClientReportById(cid){
   doc.save('Reporte_'+c.name.replace(/\s/g,'_')+'.pdf');
 }
 
-// Reporte general cliente desde topbar (adm)
+// ══ REPORTE TÉCNICO AVANZADO ══
+
+// Abre el modal de configuración del reporte
 function generateClientReport(){
-  const{jsPDF}=window.jspdf; const doc=new jsPDF();
-  doc.setFillColor(12,41,65); doc.rect(0,0,210,50,'F');
-  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('REPORTE GENERAL DE AVANCE',14,20);
-  doc.setFontSize(10); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
-  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,31);
-  doc.setTextColor(12,41,65); doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.text('ESTADO DE OBRAS',14,65);
-  const colors=[[255,165,0],[26,111,196],[26,158,106],[123,31,162]];
-  DATA.projects.forEach((p,i)=>{
-    const y=75+i*20;
-    const tareasProy=DATA.tasks.filter(t=>t.project===p.id);
-    const comp=tareasProy.filter(t=>t.status==='completado').length;
-    const avance=tareasProy.length>0?Math.round((comp/tareasProy.length)*100):p.progress;
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(12,41,65); doc.text(p.name,14,y);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,100,100);
-    doc.text(`${p.location||''} · ${p.responsible||''} · Cliente: ${clientName(p.client_id)}`,14,y+6);
-    doc.setFillColor(224,230,236); doc.rect(14,y+8,140,4,'F');
-    doc.setFillColor(...colors[i%4]); doc.rect(14,y+8,140*(avance/100),4,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(12,41,65); doc.text(avance+'%',160,y+11);
+  openReportConfigModal(null, null);
+}
+function generateClientReportById(cid){
+  openReportConfigModal(cid, null);
+}
+
+function openReportConfigModal(cid, pid){
+  document.getElementById('modal-title').textContent = 'Configurar Reporte Técnico';
+  document.getElementById('modal-box').className = 'modal';
+  const hoy = new Date().toISOString().split('T')[0];
+  const hace90 = new Date(Date.now() - 90*24*60*60*1000).toISOString().split('T')[0];
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-grid col2">
+      <div class="form-group">
+        <label class="form-label">Cliente</label>
+        <select class="form-select" id="rep-client">
+          <option value="">Todos los clientes</option>
+          ${DATA.clients.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Obra específica</label>
+        <select class="form-select" id="rep-project">
+          <option value="">Todas las obras</option>
+          ${DATA.projects.map(p=>`<option value="${p.id}" ${pid===p.id?'selected':''}>${p.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha desde</label>
+        <input class="form-input" type="date" id="rep-from" value="${hace90}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha hasta</label>
+        <input class="form-input" type="date" id="rep-to" value="${hoy}">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Incluir en el reporte</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px"><input type="checkbox" id="rep-inc-fotos" checked style="accent-color:var(--orange)"> Fotos de bitácora</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px"><input type="checkbox" id="rep-inc-tareas" checked style="accent-color:var(--orange)"> Avance de tareas</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px"><input type="checkbox" id="rep-inc-cobros" checked style="accent-color:var(--orange)"> Cobros vs presupuesto</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px"><input type="checkbox" id="rep-inc-personal" checked style="accent-color:var(--orange)"> Personal en obra</label>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:12px">
+      <i class="ti ti-file-report"></i>
+      <p>El reporte <strong>no incluye costos internos</strong> de operación. Solo muestra <span>presupuesto acordado, avance y cobros al cliente</span>.</p>
+    </div>`;
+
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+    <button class="btn-primary" onclick="buildTechnicalReport()">
+      <i class="ti ti-file-export" style="font-size:12px;vertical-align:-1px"></i> Generar PDF
+    </button>`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+async function buildTechnicalReport(){
+  const cidSel   = document.getElementById('rep-client')?.value  || '';
+  const pidSel   = document.getElementById('rep-project')?.value || '';
+  const dateFrom = document.getElementById('rep-from')?.value    || '';
+  const dateTo   = document.getElementById('rep-to')?.value      || '';
+  const incFotos    = document.getElementById('rep-inc-fotos')?.checked;
+  const incTareas   = document.getElementById('rep-inc-tareas')?.checked;
+  const incCobros   = document.getElementById('rep-inc-cobros')?.checked;
+  const incPersonal = document.getElementById('rep-inc-personal')?.checked;
+
+  // Filtrar proyectos
+  let proyectos = DATA.projects;
+  if(cidSel)  proyectos = proyectos.filter(p => p.client_id === cidSel);
+  if(pidSel)  proyectos = proyectos.filter(p => p.id === pidSel);
+  if(!proyectos.length){ toast('Sin obras para los filtros seleccionados','err'); return; }
+
+  closeModal();
+  showLoader('Generando reporte técnico…');
+
+  // Cargar imágenes de bitácora como base64 para embeber en PDF
+  async function urlToBase64(url){
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise(r => {
+        const fr = new FileReader();
+        fr.onload = () => r(fr.result);
+        fr.readAsDataURL(blob);
+      });
+    } catch { return null; }
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('portrait', 'mm', 'a4');
+  const W = 210; // ancho A4
+
+  // ── COLORES ──
+  const NAVY   = [12, 41, 65];
+  const ORANGE = [255, 165, 0];
+  const GREEN  = [26, 158, 106];
+  const RED    = [214, 59, 59];
+  const GRAY   = [100, 110, 125];
+  const LGRAY  = [240, 243, 247];
+
+  function setNavy()  { doc.setTextColor(...NAVY); }
+  function setOrange(){ doc.setTextColor(...ORANGE); }
+  function setGray()  { doc.setTextColor(...GRAY); }
+  function setGreen() { doc.setTextColor(...GREEN); }
+  function setRed()   { doc.setTextColor(...RED); }
+
+  // ── PORTADA ──
+  doc.setFillColor(...NAVY); doc.rect(0, 0, W, 297, 'F');
+
+  // Franja naranja lateral
+  doc.setFillColor(...ORANGE); doc.rect(0, 0, 8, 297, 'F');
+
+  // Logo área
+  doc.setFillColor(255,255,255); doc.roundedRect(20, 30, 170, 60, 4, 4, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(32);
+  doc.setTextColor(...ORANGE); doc.text('Build', 35, 62);
+  doc.setTextColor(...NAVY);   doc.text('Flow', 76, 62);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.setTextColor(...GRAY); doc.text('Sistema de Gestión de Construcción · Ecuador', 35, 72);
+
+  // Título del reporte
+  doc.setFontSize(22); doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255); doc.text('INFORME TÉCNICO', 20, 120);
+  doc.setFontSize(16); doc.setFont('helvetica','normal');
+  doc.setTextColor(...ORANGE); doc.text('DE AVANCE DE OBRA', 20, 133);
+
+  // Línea separadora
+  doc.setDrawColor(...ORANGE); doc.setLineWidth(0.5); doc.line(20, 140, W-20, 140);
+
+  // Metadatos del reporte
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(200,210,225);
+  const clienteLabel = cidSel ? clientName(cidSel) : 'Todos los clientes';
+  const obraLabel    = pidSel ? projectName(pidSel) : 'Todas las obras';
+  const periodoLabel = (dateFrom||'Inicio') + ' al ' + (dateTo||'Hoy');
+
+  [
+    ['Cliente',  clienteLabel],
+    ['Obra',     obraLabel],
+    ['Período',  periodoLabel],
+    ['Emitido',  new Date().toLocaleDateString('es-EC',{weekday:'long',year:'numeric',month:'long',day:'numeric'})],
+    ['Preparado por', 'BuildFlow EC — Administración'],
+  ].forEach(([k,v], i) => {
+    doc.setFont('helvetica','bold');   doc.setTextColor(...ORANGE); doc.text(k+':', 20, 158+i*12);
+    doc.setFont('helvetica','normal'); doc.setTextColor(200,210,225); doc.text(v, 65, 158+i*12);
   });
-  doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,286);
-  doc.save('Reporte_General_'+new Date().toISOString().split('T')[0]+'.pdf');
+
+  // Confidencial
+  doc.setFontSize(8); doc.setTextColor(80,100,120);
+  doc.text('DOCUMENTO CONFIDENCIAL — Para uso exclusivo del cliente', 20, 275);
+  doc.text('Página 1', W-30, 285);
+
+  // ═══════════════════════════
+  // FUNCIÓN PARA NUEVA PÁGINA
+  // ═══════════════════════════
+  let pageNum = 1;
+  function addPage(){
+    doc.addPage();
+    pageNum++;
+    // Header de página
+    doc.setFillColor(...NAVY); doc.rect(0, 0, W, 14, 'F');
+    doc.setFillColor(...ORANGE); doc.rect(0, 0, 4, 14, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+    doc.text('BUILDFLOW EC · INFORME TÉCNICO DE AVANCE', 8, 9);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...ORANGE);
+    doc.text('Página '+pageNum, W-25, 9);
+    // Footer
+    doc.setFontSize(7); doc.setTextColor(160,165,175);
+    doc.text('Emitido: '+new Date().toLocaleDateString('es-EC'), 8, 291);
+    doc.text('Documento confidencial — BuildFlow EC', W-75, 291);
+    doc.setDrawColor(220,225,235); doc.setLineWidth(0.3); doc.line(8, 288, W-8, 288);
+    return 22; // y inicial
+  }
+
+  // ══════════════════════════════
+  // PÁGINA 2: RESUMEN EJECUTIVO
+  // ══════════════════════════════
+  let y = addPage();
+
+  // Título sección
+  function sectionTitle(title, yPos){
+    doc.setFillColor(...NAVY); doc.rect(8, yPos, W-16, 9, 'F');
+    doc.setFillColor(...ORANGE); doc.rect(8, yPos, 3, 9, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.setTextColor(255,255,255); doc.text(title, 14, yPos+6.2);
+    return yPos + 14;
+  }
+
+  function kpiBox(x, yy, w, h, label, value, subtext, color){
+    doc.setFillColor(...LGRAY); doc.roundedRect(x, yy, w, h, 2, 2, 'F');
+    doc.setDrawColor(...color); doc.setLineWidth(0.8); doc.line(x, yy+h-1, x+w, yy+h-1);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+    doc.text(label.toUpperCase(), x+4, yy+6);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...color);
+    doc.text(value, x+4, yy+16);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+    doc.text(subtext, x+4, yy+22);
+  }
+
+  function progressBar(x, yy, w, pct, color){
+    doc.setFillColor(220,225,235); doc.roundedRect(x, yy, w, 4, 1, 1, 'F');
+    if(pct > 0){
+      doc.setFillColor(...color);
+      doc.roundedRect(x, yy, Math.min(w * pct/100, w), 4, 1, 1, 'F');
+    }
+  }
+
+  // KPIs globales
+  y = sectionTitle('RESUMEN EJECUTIVO', y);
+
+  const totalBudget  = proyectos.reduce((s,p)=>s+(p.budget||0),0);
+  const totalCobrado = proyectos.reduce((s,p)=>{
+    return s + DATA.expenses.filter(e=>e.project===p.id&&e.tipo==='ingreso'&&(!dateFrom||e.date>=dateFrom)&&(!dateTo||e.date<=dateTo)).reduce((ss,e)=>ss+e.total,0);
+  },0);
+  const avanceGlobal = proyectos.length > 0
+    ? Math.round(proyectos.reduce((s,p)=>{
+        const ts=DATA.tasks.filter(t=>t.project===p.id);
+        const comp=ts.filter(t=>t.status==='completado').length;
+        return s+(ts.length>0?comp/ts.length*100:p.progress||0);
+      },0) / proyectos.length)
+    : 0;
+  const totalTareas      = DATA.tasks.filter(t=>proyectos.some(p=>p.id===t.project)).length;
+  const tareasCompletadas= DATA.tasks.filter(t=>proyectos.some(p=>p.id===t.project)&&t.status==='completado').length;
+  const totalPersonal    = [...new Set(
+    DATA.staff_assignments.filter(a=>proyectos.some(p=>p.id===a.project)).map(a=>a.staff_id)
+  )].length;
+
+  const boxW = 43, boxH = 27, gap = 3;
+  kpiBox(8,   y, boxW, boxH, 'Presupuesto acordado', $m(totalBudget),    proyectos.length+' obra(s)', ORANGE);
+  kpiBox(8+boxW+gap,   y, boxW, boxH, 'Total cobrado', $m(totalCobrado), 'vs presupuesto', GREEN);
+  kpiBox(8+(boxW+gap)*2, y, boxW, boxH, 'Avance global', avanceGlobal+'%', tareasCompletadas+'/'+totalTareas+' tareas', avanceGlobal>=75?GREEN:avanceGlobal>=40?ORANGE:RED);
+  kpiBox(8+(boxW+gap)*3, y, boxW, boxH, 'Personal en obra', String(totalPersonal), 'trabajadores asignados', [26,111,196]);
+  y += boxH + 6;
+
+  // Barra de avance global visual
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
+  doc.text('Avance general del período:', 8, y+4);
+  progressBar(8, y+7, W-16, avanceGlobal, avanceGlobal>=75?GREEN:avanceGlobal>=40?ORANGE:RED);
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.setTextColor(...(avanceGlobal>=75?GREEN:avanceGlobal>=40?ORANGE:RED));
+  doc.text(avanceGlobal+'%', W-22, y+4);
+  y += 16;
+
+  // ── POR CADA OBRA ──
+  for(const proj of proyectos){
+    if(y > 240){ y = addPage(); }
+
+    y = sectionTitle('OBRA: '+proj.name.toUpperCase(), y);
+
+    const tareasProy      = DATA.tasks.filter(t=>t.project===proj.id);
+    const compProy        = tareasProy.filter(t=>t.status==='completado').length;
+    const avanceProy      = tareasProy.length>0 ? Math.round(compProy/tareasProy.length*100) : (proj.progress||0);
+    const cobradoProy     = DATA.expenses
+      .filter(e=>e.project===proj.id&&e.tipo==='ingreso'&&(!dateFrom||e.date>=dateFrom)&&(!dateTo||e.date<=dateTo))
+      .reduce((s,e)=>s+e.total,0);
+    const pctCobrado      = proj.budget>0 ? Math.round(cobradoProy/proj.budget*100) : 0;
+    const bitacoraFiltrada= DATA.bitacora.filter(b=>b.project===proj.id&&(!dateFrom||(b.entry_date||'')>=dateFrom)&&(!dateTo||(b.entry_date||'')<=dateTo));
+
+    // Info básica obra
+    doc.setFillColor(...LGRAY); doc.rect(8, y, W-16, 28, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...GRAY);
+
+    const infoRows = [
+      ['Responsable', proj.responsible||'—'],
+      ['Ubicación',   proj.location||'—'],
+      ['Cliente',     clientName(proj.client_id)],
+      ['Plazo',       proj.deadline||'—'],
+    ];
+    infoRows.forEach((r,i) => {
+      const col = i < 2 ? 12 : 115;
+      const row = i < 2 ? i : i-2;
+      doc.setFont('helvetica','bold');   doc.setTextColor(...NAVY); doc.text(r[0]+':', col, y+8+row*9);
+      doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY); doc.text(r[1], col+30, y+8+row*9);
+    });
+    y += 32;
+
+    if(incCobros){
+      // Presupuesto vs cobros
+      if(y > 245){ y = addPage(); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+      doc.text('Presupuesto acordado vs cobrado al cliente:', 8, y+5);
+
+      const barW = W - 16;
+      // Barra presupuesto
+      doc.setFillColor(220,225,235); doc.roundedRect(8, y+8, barW, 6, 1,1,'F');
+      doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+      doc.text('Presupuesto total: '+$m(proj.budget||0), 8, y+23);
+
+      // Barra cobrado (proporción del presupuesto)
+      doc.setFillColor(220,225,235); doc.roundedRect(8, y+26, barW, 6, 1,1,'F');
+      if(pctCobrado > 0){
+        doc.setFillColor(...GREEN);
+        doc.roundedRect(8, y+26, Math.min(barW*pctCobrado/100, barW), 6, 1,1,'F');
+      }
+      doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GREEN);
+      doc.text('Cobrado: '+$m(cobradoProy)+' ('+pctCobrado+'% del presupuesto)', 8, y+41);
+
+      const pendiente = (proj.budget||0) - cobradoProy;
+      doc.setTextColor(pendiente > 0 ? RED[0] : GREEN[0], pendiente > 0 ? RED[1] : GREEN[1], pendiente > 0 ? RED[2] : GREEN[2]);
+      doc.text('Saldo pendiente: '+$m(Math.abs(pendiente))+(pendiente<0?' (excedido)':''), 8, y+49);
+      y += 54;
+    }
+
+    if(incTareas){
+      // Avance de tareas
+      if(y > 240){ y = addPage(); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+      doc.text('Avance de tareas:', 8, y+5);
+      progressBar(8, y+8, W-16, avanceProy, avanceProy>=75?GREEN:avanceProy>=40?ORANGE:RED);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setTextColor(...(avanceProy>=75?GREEN:avanceProy>=40?ORANGE:RED));
+      doc.text(avanceProy+'% completado ('+compProy+' de '+tareasProy.length+' tareas)', 8, y+20);
+      y += 24;
+
+      // Tabla de tareas (máx 10)
+      if(tareasProy.length > 0 && y < 240){
+        const cols = [8, 90, 125, 150, 180];
+        const headers = ['Actividad','Responsable','Vence','Prioridad','Estado'];
+        doc.setFillColor(...NAVY); doc.rect(8, y, W-16, 7, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(255,255,255);
+        headers.forEach((h,i) => doc.text(h, cols[i]+1, y+4.8));
+        y += 7;
+
+        tareasProy.slice(0,10).forEach((t,i) => {
+          if(y > 265){ y = addPage(); }
+          if(i%2===0){ doc.setFillColor(...LGRAY); doc.rect(8,y,W-16,6,'F'); }
+          doc.setFont('helvetica','normal'); doc.setFontSize(7);
+          doc.setTextColor(...NAVY); doc.text(t.name.slice(0,35), cols[0]+1, y+4.2);
+          doc.setTextColor(...GRAY); doc.text((t.responsible||'').slice(0,15), cols[1]+1, y+4.2);
+          doc.text(t.due||'—', cols[2]+1, y+4.2);
+          const priColor = t.priority==='alta'?RED : t.priority==='media'?ORANGE : GREEN;
+          doc.setTextColor(...priColor); doc.text(t.priority||'', cols[3]+1, y+4.2);
+          const stColor = t.status==='completado'?GREEN : t.status==='activo'?[26,111,196] : ORANGE;
+          doc.setTextColor(...stColor); doc.text(t.status||'', cols[4]+1, y+4.2);
+          y += 6;
+        });
+        if(tareasProy.length > 10){
+          doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...GRAY);
+          doc.text('… y '+(tareasProy.length-10)+' tareas más', 8, y+4); y+=8;
+        }
+        y += 4;
+      }
+    }
+
+    // Bitácora de la obra
+    if(incFotos && bitacoraFiltrada.length > 0){
+      if(y > 220){ y = addPage(); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+      doc.text('Registro de bitácora ('+bitacoraFiltrada.length+' entradas en el período):', 8, y+5);
+      y += 10;
+
+      for(const entrada of bitacoraFiltrada){
+        if(y > 240){ y = addPage(); }
+
+        // Encabezado entrada
+        doc.setFillColor(230,236,242); doc.rect(8, y, W-16, 8, 'F');
+        doc.setFillColor(...ORANGE); doc.rect(8, y, 2, 8, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...NAVY);
+        doc.text((entrada.title||'Sin título').slice(0,50), 12, y+5.5);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...GRAY);
+        doc.text(entrada.entry_date||'', W-35, y+5.5);
+        y += 10;
+
+        // Descripción
+        if(entrada.description){
+          const lines = doc.splitTextToSize(entrada.description, W-24);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(60,70,85);
+          doc.text(lines.slice(0,4), 12, y+4); // máx 4 líneas
+          y += Math.min(lines.length,4) * 4.5 + 4;
+        }
+
+        // Tareas completadas en esta entrada
+        if(entrada.task_ids && entrada.task_ids.length > 0){
+          const nombTareas = entrada.task_ids.map(tid=>{
+            const t = DATA.tasks.find(t=>t.id===tid);
+            return t?'✓ '+t.name:'';
+          }).filter(Boolean).join('  ');
+          doc.setFont('helvetica','italic'); doc.setFontSize(7);
+          doc.setTextColor(...GREEN);
+          doc.text(nombTareas.slice(0,120), 12, y+3);
+          y += 7;
+        }
+
+        // Foto de bitácora
+        if(entrada.photo_url && incFotos){
+          if(y > 210){ y = addPage(); }
+          try {
+            const b64 = await urlToBase64(entrada.photo_url);
+            if(b64){
+              const imgH = 45;
+              doc.addImage(b64, 'JPEG', 12, y, 80, imgH, undefined, 'FAST');
+              // Pie de foto
+              doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...GRAY);
+              doc.text('Foto: '+entrada.title+' — '+entrada.entry_date, 12, y+imgH+4);
+              y += imgH + 8;
+            }
+          } catch(e){ /* foto no disponible */ }
+        }
+
+        y += 4;
+        if(y > 275){ y = addPage(); }
+      }
+    }
+
+    // Personal asignado
+    if(incPersonal){
+      if(y > 240){ y = addPage(); }
+      const asgsOb = DATA.staff_assignments.filter(a=>a.project===proj.id);
+      if(asgsOb.length > 0){
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+        doc.text('Personal asignado a esta obra:', 8, y+5);
+        y += 9;
+        // Tabla personal
+        doc.setFillColor(...NAVY); doc.rect(8, y, W-16, 7, 'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(255,255,255);
+        doc.text('Nombre', 10, y+4.8); doc.text('Cargo', 75, y+4.8);
+        doc.text('Horario', 135, y+4.8); doc.text('Estado', 175, y+4.8);
+        y += 7;
+        asgsOb.forEach((a,i)=>{
+          if(y > 270){ y = addPage(); }
+          const sp = DATA.staff.find(s=>s.id===a.staff_id);
+          if(!sp) return;
+          if(i%2===0){ doc.setFillColor(...LGRAY); doc.rect(8,y,W-16,6,'F'); }
+          doc.setFont('helvetica','normal'); doc.setFontSize(7);
+          doc.setTextColor(...NAVY); doc.text(sp.name.slice(0,28), 10, y+4.2);
+          doc.setTextColor(...GRAY); doc.text((sp.role||'').slice(0,22), 75, y+4.2);
+          doc.text((a.shift_start||'')+'–'+(a.shift_end||''), 135, y+4.2);
+          const stColor = sp.status==='presente'?GREEN : sp.status==='permiso'?ORANGE : RED;
+          doc.setTextColor(...stColor); doc.text(sp.status||'', 175, y+4.2);
+          y += 6;
+        });
+        y += 6;
+      }
+    }
+
+    // Separador entre obras
+    doc.setDrawColor(200,208,220); doc.setLineWidth(0.3);
+    doc.line(8, y, W-8, y); y += 8;
+  }
+
+  // ── PÁGINA FINAL: TENDENCIAS / KPIs PERÍODO ──
+  y = addPage();
+  y = sectionTitle('TENDENCIAS Y KPIs DEL PERÍODO', y);
+
+  // Mini gráfico de barras: cobros por obra
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+  doc.text('Cobros por obra en el período seleccionado', 8, y+5); y += 9;
+
+  const maxCob = Math.max(...proyectos.map(p=>
+    DATA.expenses.filter(e=>e.project===p.id&&e.tipo==='ingreso'&&(!dateFrom||e.date>=dateFrom)&&(!dateTo||e.date<=dateTo)).reduce((s,e)=>s+e.total,0)
+  ), 1);
+  const barChartW = (W - 20) / proyectos.length;
+
+  proyectos.forEach((p,i) => {
+    const cobrado = DATA.expenses
+      .filter(e=>e.project===p.id&&e.tipo==='ingreso'&&(!dateFrom||e.date>=dateFrom)&&(!dateTo||e.date<=dateTo))
+      .reduce((s,e)=>s+e.total,0);
+    const barH = 30 * cobrado / maxCob;
+    const bx   = 10 + i * barChartW;
+    const by   = y + 32 - barH;
+    const colors4 = [ORANGE, [26,111,196], GREEN, [123,31,162]];
+    doc.setFillColor(...colors4[i%4]);
+    doc.roundedRect(bx, by, barChartW-4, barH, 1,1,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...NAVY);
+    doc.text(p.name.slice(0,14), bx, y+38, {maxWidth: barChartW-2});
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+    doc.text($m(cobrado), bx, y+44);
+  });
+  y += 50;
+
+  // Tabla resumen global
+  y = sectionTitle('RESUMEN FINANCIERO DEL PERÍODO (SIN COSTOS INTERNOS)', y);
+
+  const colsF = [8, 80, 130, 170];
+  doc.setFillColor(...NAVY); doc.rect(8, y, W-16, 7, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+  ['Obra','Presupuesto acordado','Cobrado cliente','% Avance tareas'].forEach((h,i)=>doc.text(h,colsF[i]+1,y+4.8));
+  y += 7;
+
+  let grandTotal=0, grandCobrado=0;
+  proyectos.forEach((p,i)=>{
+    if(y > 268){ y = addPage(); }
+    const cobrado2 = DATA.expenses
+      .filter(e=>e.project===p.id&&e.tipo==='ingreso'&&(!dateFrom||e.date>=dateFrom)&&(!dateTo||e.date<=dateTo))
+      .reduce((s,e)=>s+e.total,0);
+    const ts2  = DATA.tasks.filter(t=>t.project===p.id);
+    const cp2  = ts2.filter(t=>t.status==='completado').length;
+    const av2  = ts2.length>0 ? Math.round(cp2/ts2.length*100) : (p.progress||0);
+    grandTotal   += (p.budget||0);
+    grandCobrado += cobrado2;
+
+    if(i%2===0){ doc.setFillColor(...LGRAY); doc.rect(8,y,W-16,6,'F'); }
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+    doc.text(p.name.slice(0,30), colsF[0]+1, y+4.2);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+    doc.text($m(p.budget||0), colsF[1]+1, y+4.2);
+    doc.setTextColor(...GREEN); doc.text($m(cobrado2), colsF[2]+1, y+4.2);
+    const avColor = av2>=75?GREEN : av2>=40?ORANGE : RED;
+    doc.setTextColor(...avColor); doc.setFont('helvetica','bold'); doc.text(av2+'%', colsF[3]+1, y+4.2);
+    y += 6;
+  });
+
+  // Fila totales
+  doc.setFillColor(...NAVY); doc.rect(8,y,W-16,8,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
+  doc.text('TOTALES', colsF[0]+1, y+5.5);
+  doc.text($m(grandTotal), colsF[1]+1, y+5.5);
+  doc.setTextColor(...ORANGE); doc.text($m(grandCobrado), colsF[2]+1, y+5.5);
+  doc.setTextColor(255,255,255);
+  const avFinal = proyectos.length>0?Math.round(proyectos.reduce((s,p)=>{
+    const ts=DATA.tasks.filter(t=>t.project===p.id);
+    const cp=ts.filter(t=>t.status==='completado').length;
+    return s+(ts.length>0?cp/ts.length*100:(p.progress||0));
+  },0)/proyectos.length):0;
+  doc.text(avFinal+'%', colsF[3]+1, y+5.5);
+  y += 14;
+
+  // Nota de cierre
+  doc.setFillColor(245,248,252); doc.roundedRect(8, y, W-16, 22, 3,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...ORANGE);
+  doc.text('NOTA IMPORTANTE', 12, y+7);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...GRAY);
+  doc.text('Este informe refleja el avance de obra y los cobros realizados al cliente. No incluye', 12, y+13);
+  doc.text('costos internos de operación, nómina ni gastos propios de la empresa.', 12, y+19);
+
+  hideLoader();
+  const fname = 'Informe_Tecnico_'+(pidSel?projectName(pidSel):cidSel?clientName(cidSel):'General')
+    .replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+new Date().toISOString().split('T')[0]+'.pdf';
+  doc.save(fname);
+  toast('Reporte técnico generado','ok');
 }
 
 function generateStaffPDF(id){
