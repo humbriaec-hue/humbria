@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1256,9 +1255,6 @@ ${isAdm?`${p.blood_type?`<div style="font-size:10px;color:var(--red);margin-top:
   <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportNominaOpsPDF(document.getElementById('nomina-proy-sel').value||null)">
     <i class="ti ti-file-export"></i> Nómina PDF
   </button>
-  <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="exportNominaVisitaPDF(document.getElementById('nomina-proy-sel').value||null)">
-  <i class="ti ti-clipboard-list"></i> Nómina Visita
-</button>
   <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('staff')">+ Añadir persona</button>
 </div></div>    ${filterActivo}
     <div class="grid3" id="personal-grid">${renderCards(DATA.staff.filter(s=>s.activo!==false))}</div>
@@ -2755,66 +2751,25 @@ function exportPayrollPDF(){
   doc.save('nomina_buildflow.pdf');
 }
 
-async function generateQuotePDF(id){
-  const q = DATA.quotes.find(c => c.id === id); if(!q) return;
-  const defaultTpl = DATA.pdf_templates.find(t => t.is_default);
-
-  // Si hay plantilla, hacer overlay
-  if(defaultTpl && defaultTpl.file_url && defaultTpl.file_url !== '#' && defaultTpl.file_url !== '#local'){
-    try {
-      const response = await fetch(defaultTpl.file_url);
-      const arrayBuffer = await response.arrayBuffer();
-      const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-      const pages = pdfDoc.getPages();
-      const page = pages[0];
-      const { height } = page.getSize();
-
-      // Coordenadas — ajusta x,y según tu plantilla
-      // y se mide desde ABAJO en pdf-lib
-      const datos = [
-        { texto: q.id,                           x: 130, y: height - 80  },
-        { texto: q.date || '',                   x: 130, y: height - 95  },
-        { texto: q.client,                       x: 40,  y: height - 130 },
-        { texto: q.description || '',            x: 40,  y: height - 150 },
-        { texto: '$' + (q.subtotal||0).toFixed(2), x: 150, y: height - 200 },
-        { texto: q.iva_applied ? '$'+(q.iva||0).toFixed(2) : '$0.00', x: 150, y: height - 215 },
-        { texto: '$' + (q.total||0).toFixed(2), x: 150, y: height - 230 },
-      ];
-
-      datos.forEach(d => {
-        page.drawText(String(d.texto), {
-          x: d.x,
-          y: d.y,
-          size: 10,
-          color: PDFLib.rgb(0.05, 0.16, 0.25),
-        });
-      });
-
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = q.id + '_cotizacion.pdf'; a.click();
-      URL.revokeObjectURL(url);
-      return;
-    } catch(e) {
-      toast('No se pudo cargar la plantilla, generando PDF estándar…', 'info');
-    }
-  }
-
-  // Fallback — PDF estándar si no hay plantilla o falla el fetch
+function generateQuotePDF(id){
+  const q=DATA.quotes.find(c=>c.id===id); if(!q) return;
+  const defaultTpl=DATA.pdf_templates.find(t=>t.is_default);
   const{jsPDF}=window.jspdf; const doc=new jsPDF();
-  doc.setFillColor(12,41,65); doc.rect(0,0,210,42,'F');
-  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('BuildFlow EC',14,18);
-  doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.text('Construcción · Ecuador',14,27);
-  doc.setFontSize(15); doc.setTextColor(255,165,0); doc.setFont('helvetica','bold'); doc.text('COTIZACIÓN '+q.id,130,18);
+  let topOffset=0;
+  if(defaultTpl&&defaultTpl.name){
+    doc.setFillColor(26,158,106); doc.rect(0,0,210,8,'F');
+    doc.setFontSize(7); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
+    doc.text('Plantilla: '+defaultTpl.name,5,5.5); topOffset=8;
+  }
+  doc.setFillColor(12,41,65); doc.rect(0,topOffset,210,42,'F');
+  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('BuildFlow EC',14,topOffset+18);
+  doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.text('Construcción · Ecuador',14,topOffset+27);
+  doc.setFontSize(15); doc.setTextColor(255,165,0); doc.setFont('helvetica','bold'); doc.text('COTIZACIÓN '+q.id,130,topOffset+18);
   doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
-  doc.text('Fecha: '+q.date,130,27); doc.text('Validez: '+(q.validity_days||30)+' días',130,35);
-  const y2=52;
+  doc.text('Fecha: '+q.date,130,topOffset+27); doc.text('Validez: '+(q.validity_days||30)+' días',130,topOffset+35);
+  const y2=topOffset+52;
   doc.setTextColor(12,41,65); doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.text('CLIENTE',14,y2);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10);
-  doc.text('Nombre: '+q.client,14,y2+8);
-  doc.text('Trabajo: '+(q.description||''),14,y2+16);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text('Nombre: '+q.client,14,y2+8); doc.text('Trabajo: '+(q.description||''),14,y2+16);
   doc.setFillColor(240,242,245); doc.rect(110,y2+55,86,32,'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(12,41,65);
   doc.text('Subtotal:',112,y2+65); doc.text('$'+(q.subtotal||0).toFixed(2),172,y2+65);
@@ -2822,10 +2777,11 @@ async function generateQuotePDF(id){
   doc.setFillColor(12,41,65); doc.rect(110,y2+79,86,14,'F');
   doc.setTextColor(255,165,0); doc.setFontSize(12); doc.text('TOTAL:',112,y2+88); doc.text('$'+(q.total||0).toFixed(2),160,y2+88);
   doc.setFontSize(8); doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
+  doc.text('Validez '+(q.validity_days||30)+' días. Precios en USD. IVA '+((q.iva_pct)||15)+'%',14,y2+104);
   doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,285);
   doc.save(q.id+'_cotizacion_'+q.client.replace(/\s/g,'_')+'.pdf');
 }
-  
+
 function exportAllQuotesPDF(){
   const{jsPDF}=window.jspdf; const doc=new jsPDF();
   doc.setFillColor(12,41,65); doc.rect(0,0,210,36,'F');
@@ -2849,178 +2805,30 @@ function exportAllQuotesPDF(){
 }
 
 // Reporte por cliente (desde botón en tarjeta de cliente)
-async function generateClientReportById(cid){
-  const c = DATA.clients.find(cl => cl.id === cid); if(!c) return;
-  const proyectos = DATA.projects.filter(p => p.client_id === cid);
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF();
-
-  // ── ENCABEZADO ──
+function generateClientReportById(cid){
+  const c=DATA.clients.find(cl=>cl.id===cid); if(!c) return;
+  const proyectos=DATA.projects.filter(p=>p.client_id===cid);
+  const{jsPDF}=window.jspdf; const doc=new jsPDF();
   doc.setFillColor(12,41,65); doc.rect(0,0,210,50,'F');
-  doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.setTextColor(255,165,0); doc.text('REPORTE DE CLIENTE',14,20);
-  doc.setFontSize(10); doc.setTextColor(255,255,255);
-  doc.setFont('helvetica','normal');
-  doc.text(c.name,14,31);
-  doc.text('RUC/Cédula: '+(c.ruc||'—'),14,39);
-  doc.text('Contacto: '+(c.contact||'—')+'  ·  Tel: '+(c.phone||'—'),14,47);
-  doc.setFontSize(8); doc.setTextColor(200,200,200);
-  doc.text('Emitido: '+new Date().toLocaleDateString('es-EC'),160,47);
-
-  let y = 62;
-
-  // ── OBRAS DEL CLIENTE ──
-  proyectos.forEach((p, pi) => {
-    // Título de obra
-    doc.setFillColor(230,235,240); doc.rect(14,y,182,9,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.setTextColor(12,41,65); doc.text(p.name, 16, y+6.5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.setTextColor(100,100,100);
-    doc.text(p.type+' · '+p.location+' · Responsable: '+p.responsible, 16, y+14);
-    y += 18;
-
-    // ── BARRA DE PROGRESO DEL CRONOGRAMA ──
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.setTextColor(12,41,65); doc.text('Progreso del cronograma:', 14, y);
-
-    // Calcular % por fechas reales
-    const inicio = p.date_from ? new Date(p.date_from) : new Date(p.deadline||Date.now());
-    const fin = p.deadline ? new Date(p.deadline) : new Date();
-    const hoy = new Date();
-    const totalDias = (fin - inicio) / 86400000 || 1;
-    const diasTranscurridos = Math.min(Math.max((hoy - inicio) / 86400000, 0), totalDias);
-    const pctCrono = Math.round((diasTranscurridos / totalDias) * 100);
-
-    // Barra de tareas completadas
-    const tareasProy = DATA.tasks.filter(t => t.project === p.id);
-    const completadas = tareasProy.filter(t => t.status === 'completado').length;
-    const pctTareas = tareasProy.length > 0 ? Math.round((completadas/tareasProy.length)*100) : p.progress||0;
-
-    // Barra cronograma (tiempo)
-    doc.setFillColor(224,230,236); doc.rect(14, y+3, 120, 5, 'F');
-    doc.setFillColor(26,111,196); doc.rect(14, y+3, 120*(pctCrono/100), 5, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(26,111,196);
-    doc.text('Tiempo: '+pctCrono+'%', 138, y+7);
-
-    y += 10;
-
-    // Barra tareas
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(12,41,65);
-    doc.text('Tareas completadas:', 14, y);
-    doc.setFillColor(224,230,236); doc.rect(14, y+3, 120, 5, 'F');
-    doc.setFillColor(26,158,106); doc.rect(14, y+3, 120*(pctTareas/100), 5, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(26,158,106);
-    doc.text(completadas+'/'+tareasProy.length+' ('+pctTareas+'%)', 138, y+7);
-    y += 14;
-
-    // ── PAGOS RECIBIDOS ──
-    const pagos = DATA.expenses.filter(e => e.tipo === 'ingreso' && e.project === p.id);
-    if(pagos.length > 0){
-      doc.setFont('helvetica','bold'); doc.setFontSize(9);
-      doc.setTextColor(12,41,65); doc.text('Pagos recibidos:', 14, y);
-      y += 5;
-
-      // Encabezado tabla pagos
-      doc.setFillColor(12,41,65); doc.rect(14,y,182,7,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-      doc.setTextColor(255,255,255);
-      doc.text('Factura', 16, y+5);
-      doc.text('Descripción', 50, y+5);
-      doc.text('Fecha', 130, y+5);
-      doc.text('Monto', 168, y+5);
-      y += 9;
-
-      let totalPagos = 0;
-      pagos.forEach((pg, i) => {
-        if(i%2===0){ doc.setFillColor(248,250,252); doc.rect(14,y-1,182,7,'F'); }
-        doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
-        doc.setTextColor(100,100,100); doc.text(pg.invoice||'—', 16, y+4.5);
-        doc.setTextColor(12,41,65); doc.text((pg.description||'').slice(0,40), 50, y+4.5);
-        doc.setTextColor(80,80,80); doc.text(pg.date||'—', 130, y+4.5);
-        doc.setFont('helvetica','bold'); doc.setTextColor(26,158,106);
-        doc.text('$'+(pg.total||0).toFixed(2), 168, y+4.5);
-        totalPagos += pg.total||0;
-        y += 7;
-      });
-
-      // Total pagos
-      doc.setFillColor(26,158,106); doc.rect(14,y,182,8,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-      doc.setTextColor(255,255,255);
-      doc.text('Total cobrado:', 16, y+5.5);
-      doc.text('$'+totalPagos.toFixed(2), 168, y+5.5);
-      y += 12;
-    } else {
-      doc.setFont('helvetica','normal'); doc.setFontSize(8);
-      doc.setTextColor(150,150,150); doc.text('Sin pagos registrados.', 14, y);
-      y += 8;
-    }
-
-    // ── BITÁCORAS ──
-    const bitacoras = DATA.bitacora.filter(b => b.project === p.id);
-    if(bitacoras.length > 0){
-      doc.setFont('helvetica','bold'); doc.setFontSize(9);
-      doc.setTextColor(12,41,65); doc.text('Bitácora de obra ('+bitacoras.length+' entradas):', 14, y);
-      y += 6;
-
-      for(const b of bitacoras){
-        if(y > 255){ doc.addPage(); y = 20; }
-
-        // Foto si existe
-        if(b.photo_url){
-          try {
-            const resp = await fetch(b.photo_url);
-            const buf = await resp.arrayBuffer();
-            const ext = b.photo_url.toLowerCase().includes('.png') ? 'PNG' : 'JPEG';
-            const imgData = new Uint8Array(buf);
-            doc.addImage(imgData, ext, 14, y, 40, 30);
-            // Texto al lado de la foto
-            doc.setFont('helvetica','bold'); doc.setFontSize(9);
-            doc.setTextColor(12,41,65); doc.text(b.title||'Sin título', 58, y+6);
-            doc.setFont('helvetica','normal'); doc.setFontSize(8);
-            doc.setTextColor(255,140,0); doc.text(b.entry_date||'', 58, y+13);
-            doc.setTextColor(80,80,80);
-            const desc = doc.splitTextToSize((b.description||'').slice(0,180), 130);
-            doc.text(desc, 58, y+20);
-            y += 35;
-          } catch(e){
-            // Sin foto — solo texto
-            doc.setFont('helvetica','bold'); doc.setFontSize(9);
-            doc.setTextColor(12,41,65); doc.text(b.title||'Sin título', 14, y+4);
-            doc.setFont('helvetica','normal'); doc.setFontSize(8);
-            doc.setTextColor(255,140,0); doc.text(b.entry_date||'', 14, y+10);
-            doc.setTextColor(80,80,80);
-            const desc = doc.splitTextToSize(b.description||'', 182);
-            doc.text(desc, 14, y+16);
-            y += 16 + (desc.length * 4);
-          }
-        } else {
-          doc.setFont('helvetica','bold'); doc.setFontSize(9);
-          doc.setTextColor(12,41,65); doc.text(b.title||'Sin título', 14, y+4);
-          doc.setFont('helvetica','normal'); doc.setFontSize(8);
-          doc.setTextColor(255,140,0); doc.text(b.entry_date||'', 14, y+10);
-          doc.setTextColor(80,80,80);
-          const desc = doc.splitTextToSize(b.description||'', 182);
-          doc.text(desc, 14, y+16);
-          y += 16 + (desc.length * 4);
-        }
-
-        doc.setDrawColor(220,220,220); doc.line(14, y, 196, y);
-        y += 4;
-      }
-    }
-
-    y += 6;
-    if(y > 260 && pi < proyectos.length-1){ doc.addPage(); y = 20; }
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('REPORTE DE CLIENTE',14,20);
+  doc.setFontSize(10); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
+  doc.text(c.name,14,31); doc.text('Emitido: '+new Date().toLocaleDateString('es-EC'),14,40);
+  doc.setTextColor(12,41,65); doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.text('OBRAS DEL CLIENTE',14,65);
+  const colors=[[255,165,0],[26,111,196],[26,158,106],[123,31,162]];
+  proyectos.forEach((p,i)=>{
+    const y=75+i*24;
+    const tareasProy=DATA.tasks.filter(t=>t.project===p.id);
+    const comp=tareasProy.filter(t=>t.status==='completado').length;
+    const avance=tareasProy.length>0?Math.round((comp/tareasProy.length)*100):p.progress;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(12,41,65); doc.text(p.name,14,y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,100,100);
+    doc.text(`${p.location||''} · Responsable: ${p.responsible||''} · Plazo: ${p.deadline||'—'}`,14,y+6);
+    doc.setFillColor(224,230,236); doc.rect(14,y+8,140,4,'F');
+    doc.setFillColor(...colors[i%4]); doc.rect(14,y+8,140*(avance/100),4,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(12,41,65); doc.text(avance+'%',160,y+11);
   });
-
-  // ── FOOTER ──
-  doc.setFontSize(7); doc.setTextColor(150,150,150);
-  doc.setFont('helvetica','normal');
-  doc.text('BuildFlow EC · Reporte generado: '+new Date().toLocaleDateString('es-EC'), 14, 286);
-  doc.text('CONFIDENCIAL — Solo para uso del cliente', 120, 286);
-
+  if(proyectos.length===0){ doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(150,150,150); doc.text('Sin obras asignadas.',14,75); }
+  doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,286);
   doc.save('Reporte_'+c.name.replace(/\s/g,'_')+'.pdf');
 }
 
@@ -3145,71 +2953,6 @@ function exportNominaOpsPDF(proyFiltro) {
   doc.text('BuildFlow EC · ' + new Date().toLocaleDateString('es-EC'), 14, 286);
 
   doc.save('nomina_' + (proyFiltro ? projectName(proyFiltro).replace(/\s/g,'_') : 'completa') + '.pdf');
-}
-
-function exportNominaVisitaPDF(proyFiltro) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  let staff = DATA.staff.filter(s => s.activo !== false);
-  let titulo = 'NÓMINA DE VISITA — PERSONAL COMPLETO';
-
-  if (proyFiltro) {
-    const asgsDelProyecto = DATA.staff_assignments
-      .filter(a => a.project === proyFiltro)
-      .map(a => a.staff_id);
-    staff = staff.filter(s => asgsDelProyecto.includes(s.id));
-    titulo = 'NÓMINA DE VISITA — ' + projectName(proyFiltro);
-  }
-
-  // Encabezado
-  doc.setFillColor(12, 41, 65); doc.rect(0, 0, 210, 42, 'F');
-  doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 165, 0); doc.text('BuildFlow EC', 14, 18);
-  doc.setFontSize(10); doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'normal');
-  doc.text(titulo, 14, 28);
-  doc.text('Fecha: ' + new Date().toLocaleDateString('es-EC'), 14, 36);
-
-  // Encabezado tabla
-  let y = 52;
-  doc.setFillColor(230, 235, 240); doc.rect(14, y, 182, 8, 'F');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(12, 41, 65);
-  doc.text('N°', 16, y + 5.5);
-  doc.text('Nombre Completo', 26, y + 5.5);
-  doc.text('Cédula', 120, y + 5.5);
-  doc.text('Firma', 160, y + 5.5);
-  y += 10;
-
-  // Filas
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-  staff.forEach((p, i) => {
-    if (i % 2 === 0) {
-      doc.setFillColor(248, 250, 252); doc.rect(14, y - 1, 182, 9, 'F');
-    }
-    doc.setTextColor(100, 100, 100); doc.text(String(i + 1), 16, y + 5.5);
-    doc.setTextColor(12, 41, 65); doc.setFont('helvetica', 'bold');
-    doc.text(p.name.slice(0, 35), 26, y + 5.5);
-    doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-    doc.text(p.cedula || '—', 120, y + 5.5);
-    doc.setDrawColor(180, 180, 180);
-    doc.line(160, y + 6, 194, y + 6);
-    y += 9;
-    if (y > 270) { doc.addPage(); y = 20; }
-  });
-
-  // Footer
-  y += 4;
-  doc.setFillColor(12, 41, 65); doc.rect(14, y, 182, 10, 'F');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Total: ' + staff.length + ' personas', 16, y + 7);
-
-  doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-  doc.setFont('helvetica', 'normal');
-  doc.text('BuildFlow EC · ' + new Date().toLocaleDateString('es-EC'), 14, 286);
-
-  doc.save('nomina_visita_' + (proyFiltro ? projectName(proyFiltro).replace(/\s/g, '_') : 'completa') + '.pdf');
 }
   
 // ── INIT ──
