@@ -470,11 +470,17 @@ let isConnected = false;
 async function checkConnection() {
   setConnStatus('connecting','Conectando…');
   try {
-    const { error } = await db.from('projects').select('id').limit(1);
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('timeout')), 5000)
+    );
+    const query = db.from('projects').select('id').limit(1);
+    const { error } = await Promise.race([query, timeout]);
     if (error) throw error;
-    isConnected = true; setConnStatus('online','Supabase conectado');
+    isConnected = true; 
+    setConnStatus('online','Supabase conectado');
   } catch(e) {
-    isConnected = false; setConnStatus('offline','Sin conexión · modo local');
+    isConnected = false; 
+    setConnStatus('offline','Sin conexión · modo local');
     toast('Sin conexión a Supabase — usando datos locales','err');
   }
 }
@@ -742,8 +748,10 @@ async function initApp(mode){
     document.getElementById('btn-report').style.display='none';
   }
   buildNav(mode);
-  showLoader('Cargando datos…'); await loadAllData(); hideLoader();
-  switchView('dashboard');
+  showLoader('Conectando a base de datos…');
+  await checkConnection();
+  await loadAllData();
+  hideLoader();  switchView('dashboard');
 }
 function refreshNav(){ if(currentMode) buildNav(currentMode); }
 
@@ -3214,7 +3222,10 @@ function exportNominaVisitaPDF(proyFiltro) {
   
 // ── INIT ──
 document.getElementById('modal-backdrop').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-window.addEventListener('load', function(){ checkConnection(); });
+window.addEventListener('load', function(){
+  setConnStatus('online','Listo');
+  document.getElementById('conn-status').style.display='none';
+});
 </script>
 </body>
 </html>
