@@ -1551,62 +1551,94 @@ function renderCotizaciones(){
 
 // ── PLANTILLAS PDF ──
 function renderPlantillas(){
-  const tpls=DATA.pdf_templates;
-  const typeLabels={cotizacion:'Cotización',rol_pago:'Rol de pago',reporte_cliente:'Reporte cliente',documento_generico:'Genérico'};
+  const tpls = DATA.pdf_templates;
+  const tplActiva = tpls.find(t => t.is_default);
+
   return `<div class="card">
     <div class="card-header">
-      <div><span class="card-title">Plantillas PDF</span><div style="margin-top:4px;font-size:11px;color:var(--gray-400)">La predeterminada se usa en todas las cotizaciones.</div></div>
-      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="document.getElementById('tpl-file-input').click()"><i class="ti ti-cloud-upload"></i> Subir plantilla</button>
+      <div>
+        <span class="card-title">Plantillas PDF para Cotizaciones</span>
+        <div style="margin-top:4px;font-size:11px;color:var(--gray-400)">
+          Sube tu PDF membretado. Se convierte en imagen de fondo para todas las cotizaciones.
+        </div>
+      </div>
     </div>
-    <div style="margin-bottom:16px">
-      <div class="upload-zone">
-        <input type="file" accept=".pdf,.png,.jpg,.jpeg" id="tpl-file-input" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleTemplateFile(this)">
+
+    <!-- ZONA DE SUBIDA -->
+    <div style="margin-bottom:18px">
+      <div class="upload-zone" onclick="document.getElementById('tpl-file-input').click()">
+        <input type="file" id="tpl-file-input" accept=".pdf"
+          style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"
+          onchange="handleTemplateFilePDF(this.files[0])">
         <i class="ti ti-file-type-pdf"></i>
-        <p><strong>Arrastra tu plantilla PDF aquí</strong></p><span>PDF, PNG o JPG · máx. 10 MB</span>
+        <p><strong>Arrastra tu PDF membretado aquí</strong></p>
+        <span>Solo PDF · máx. 10 MB · se convierte automáticamente en fondo</span>
       </div>
-      <div id="tpl-upload-status" style="margin-top:8px;display:none"></div>
+      <div id="tpl-upload-status" style="margin-top:10px;display:none"></div>
     </div>
-    ${tpls.length===0?`<div style="text-align:center;padding:30px;color:var(--gray-400)"><i class="ti ti-file-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Sin plantillas.</div>`:
-    `<div class="tpl-grid">${tpls.map(t=>`<div class="tpl-card ${t.is_default?'default-tpl':''}">
-      ${t.is_default?'<span class="tpl-badge-default">★ Predeterminada</span>':''}
-      <i class="ti ti-file-type-pdf"></i>
-      <div class="tpl-name">${t.name}</div><div class="tpl-type">${typeLabels[t.type]||t.type}</div>
-      <div class="tpl-type num" style="margin-top:3px">${t.size_kb} KB · ${t.created_at}</div>
-      <div class="tpl-actions">
-        ${!t.is_default?`<button class="tpl-set-default" onclick="setDefaultTemplate('${t.id}')">★ Predeterminar</button>`:''}
-        <button class="tpl-del" onclick="deleteTemplate('${t.id}')"><i class="ti ti-trash" style="font-size:10px"></i></button>
+
+    <!-- VISTA PREVIA SI HAY PLANTILLA ACTIVA -->
+    ${tplActiva && tplActiva.pages && tplActiva.pages.length > 0 ? `
+    <div style="display:flex;align-items:flex-start;gap:16px;padding:14px;background:var(--green-bg);border:1px solid #a8dfc4;border-radius:var(--r-md);margin-bottom:16px">
+      <img src="${tplActiva.pages[0]}" style="width:80px;height:110px;object-fit:contain;border:1px solid var(--gray-200);border-radius:6px;flex-shrink:0;background:#fff">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <i class="ti ti-circle-check" style="color:var(--green);font-size:16px"></i>
+          <span style="font-family:var(--fd);font-weight:700;font-size:13px;color:var(--green)">Plantilla activa</span>
+        </div>
+        <div style="font-size:12px;color:var(--gray-700);margin-bottom:4px"><strong>${tplActiva.name}</strong></div>
+        <div style="font-size:11px;color:var(--gray-400)">${tplActiva.pages.length} página(s) · Subida: ${tplActiva.created_at}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="document.getElementById('tpl-file-input').click()">
+            <i class="ti ti-upload" style="font-size:11px"></i> Reemplazar
+          </button>
+          <button class="btn-danger-sm" style="padding:5px 10px;font-size:11px" onclick="deleteTemplatePDF('${tplActiva.id}')">
+            <i class="ti ti-trash" style="font-size:11px"></i> Eliminar
+          </button>
+        </div>
       </div>
-    </div>`).join('')}</div>`}
+    </div>` : `
+    <div style="padding:16px;background:var(--amber-bg);border:1px solid #f0d080;border-radius:var(--r-md);margin-bottom:16px;display:flex;gap:10px;align-items:flex-start">
+      <i class="ti ti-alert-triangle" style="color:var(--amber);font-size:18px;flex-shrink:0"></i>
+      <div>
+        <div style="font-weight:700;font-size:12px;color:var(--amber)">Sin plantilla configurada</div>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:3px">
+          Las cotizaciones se generarán sin membrete. Sube un PDF para usarlo como fondo.
+        </div>
+      </div>
+    </div>`}
+
+    <!-- LISTA DE TODAS LAS PLANTILLAS -->
+    ${tpls.length > 0 ? `
+    <div class="card-title" style="margin-bottom:10px">Todas las plantillas (${tpls.length})</div>
+    <div class="tpl-grid">
+      ${tpls.map(t => `
+        <div class="tpl-card ${t.is_default ? 'default-tpl' : ''}">
+          ${t.is_default ? '<span class="tpl-badge-default">★ Activa</span>' : ''}
+          ${t.pages && t.pages[0]
+            ? `<img src="${t.pages[0]}" style="width:60px;height:80px;object-fit:contain;border:1px solid var(--gray-200);border-radius:4px;margin-bottom:8px;background:#fff">`
+            : '<i class="ti ti-file-type-pdf"></i>'
+          }
+          <div class="tpl-name">${t.name}</div>
+          <div class="tpl-type">${t.pages ? t.pages.length + ' pág.' : ''} · ${t.created_at}</div>
+          <div class="tpl-actions">
+            ${!t.is_default
+              ? `<button class="tpl-set-default" onclick="setDefaultTemplatePDF('${t.id}')">★ Usar esta</button>`
+              : ''}
+            <button class="tpl-del" onclick="deleteTemplatePDF('${t.id}')">
+              <i class="ti ti-trash" style="font-size:10px"></i>
+            </button>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+  </div>
+
+  <div class="info-box">
+    <i class="ti ti-info-circle"></i>
+    <p>El PDF se convierte en imagen de fondo para las cotizaciones. Usa un <strong>PDF A4 membretado</strong> con tu logo y datos de empresa. Se guarda en <span>Supabase</span> y aplica a todas las cotizaciones nuevas.</p>
   </div>`;
 }
 
-async function handleTemplateFile(input){
-  const file=input.files[0]; if(!file) return;
-  if(file.size>10*1024*1024){ alert('Supera 10 MB.'); return; }
-  const status=document.getElementById('tpl-upload-status');
-  status.style.display='block';
-  status.innerHTML=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Subiendo…</div>`;
-  let fileUrl='#local';
-  if(isConnected){
-    const path=`templates/${Date.now()}_${file.name}`;
-    const{data:up,error:upErr}=await db.storage.from('buildflow-docs').upload(path,file,{upsert:true});
-    if(!upErr){ const{data:urlData}=db.storage.from('buildflow-docs').getPublicUrl(path); fileUrl=urlData.publicUrl; }
-  }
-  const id='tpl-'+(DATA.pdf_templates.length+1).toString().padStart(3,'0');
-  const row={id,name:file.name.replace(/\.[^.]+$/,''),type:'cotizacion',description:'',file_url:fileUrl,is_default:DATA.pdf_templates.length===0,created_at:new Date().toLocaleDateString('es-EC'),size_kb:Math.round(file.size/1024)};
-  await dbInsert('pdf_templates',row);
-  status.innerHTML=`<div style="font-size:12px;color:var(--green)"><i class="ti ti-cloud-check"></i> Guardada.</div>`;
-  refreshNav(); setTimeout(()=>switchView('plantillas'),800);
-}
-async function setDefaultTemplate(id){
-  DATA.pdf_templates.forEach(t=>t.is_default=t.id===id);
-  if(isConnected){ await db.from('pdf_templates').update({is_default:false}).neq('id',''); await db.from('pdf_templates').update({is_default:true}).eq('id',id); }
-  switchView('plantillas');
-}
-async function deleteTemplate(id){
-  if(!confirm('¿Eliminar plantilla?')) return;
-  await dbDelete('pdf_templates',id); switchView('plantillas');
-}
 
 // ── BITÁCORA ──
 // Nuevas funciones: seleccionar tarea (la tacha), registrar uso de inventario (descuenta), subir foto real a Supabase
@@ -1627,7 +1659,171 @@ function switchBitTab(tab){
   document.getElementById('tab-att').style.borderColor=tab==='att'?'var(--orange)':'var(--gray-200)';
   document.getElementById('tab-att').style.color=tab==='att'?'var(--orange)':'var(--gray-500)';
 }
+// ── PLANTILLAS PDF MEMBRETADAS (sistema igual a Oceango) ──
 
+async function handleTemplateFilePDF(file) {
+  if (!file) return;
+  if (file.type !== 'application/pdf') { toast('Solo se aceptan archivos PDF', 'err'); return; }
+  if (file.size > 10 * 1024 * 1024) { toast('El archivo supera 10 MB', 'err'); return; }
+
+  const status = document.getElementById('tpl-upload-status');
+  status.style.display = 'block';
+  status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)">
+    <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Procesando PDF…
+  </div>`;
+
+  try {
+    // Cargar PDF.js si no está disponible
+    if (!window.pdfjsLib) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)">
+      <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Convirtiendo páginas a imagen…
+    </div>`;
+
+    // Convertir cada página del PDF a imagen base64
+    const ab = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const pages = [];
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const sc = 2.0; // alta resolución
+      const vp = page.getViewport({ scale: sc });
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+      pages.push(canvas.toDataURL('image/jpeg', 0.88));
+    }
+
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--amber)">
+      <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Guardando en Supabase…
+    </div>`;
+
+    await saveTemplatePDF(file.name, pages);
+
+    status.innerHTML = `<div style="font-size:12px;color:var(--green);display:flex;align-items:center;gap:6px">
+      <i class="ti ti-circle-check"></i> Plantilla guardada correctamente (${pages.length} pág.)
+    </div>`;
+    setTimeout(() => switchView('plantillas'), 900);
+
+  } catch (e) {
+    console.error(e);
+    status.innerHTML = `<div style="font-size:12px;color:var(--red)">
+      <i class="ti ti-alert-triangle"></i> Error al procesar el PDF: ${e.message}
+    </div>`;
+    toast('Error al procesar el PDF', 'err');
+  }
+}
+
+async function saveTemplatePDF(fileName, pages) {
+  // Marcar todas las existentes como no-default
+  DATA.pdf_templates.forEach(t => t.is_default = false);
+  if (isConnected) {
+    await db.from('pdf_templates').update({ is_default: false }).neq('id', '___');
+  }
+
+  const id = 'tpl-' + Date.now();
+  const nombre = fileName.replace(/\.[^.]+$/, '');
+  const obj = {
+    id,
+    name: nombre,
+    type: 'cotizacion',
+    description: 'PDF membretado subido por usuario',
+    pages,          // array de imágenes base64
+    file_url: null,
+    is_default: true,
+    created_at: new Date().toLocaleDateString('es-EC'),
+    size_kb: Math.round(pages.join('').length / 1024)
+  };
+
+  if (isConnected) {
+    // Guardar en tabla app_settings (clave única, igual que Oceango)
+    const val = JSON.stringify({ id, name: nombre, pages, is_default: true, created_at: obj.created_at });
+    const { error } = await db.from('app_settings')
+      .upsert({ key: 'quote_template_buildflow', value: val, updated_at: new Date().toISOString() },
+               { onConflict: 'key' });
+    if (error) {
+      // Fallback: guardar en tabla pdf_templates normal
+      await db.from('pdf_templates').insert([{ ...obj, pages: JSON.stringify(pages) }]);
+    }
+    toast('Plantilla guardada en Supabase ☁', 'ok');
+  } else {
+    // Modo local: localStorage
+    try {
+      localStorage.setItem('buildflow_tpl_v1', JSON.stringify(obj));
+      toast('Plantilla guardada localmente', 'ok');
+    } catch (e) {
+      toast('PDF demasiado grande para almacenamiento local', 'err');
+      return;
+    }
+  }
+
+  DATA.pdf_templates = DATA.pdf_templates.filter(t => !t.is_default);
+  DATA.pdf_templates.unshift(obj);
+}
+
+async function loadTemplatePDF() {
+  // Intentar cargar desde Supabase primero
+  if (isConnected) {
+    try {
+      const { data } = await db.from('app_settings')
+        .select('value').eq('key', 'quote_template_buildflow').single();
+      if (data?.value) {
+        const tpl = JSON.parse(data.value);
+        // Inyectar en DATA.pdf_templates
+        DATA.pdf_templates = DATA.pdf_templates.filter(t => t.id !== tpl.id);
+        DATA.pdf_templates.unshift({ ...tpl, is_default: true });
+        return;
+      }
+    } catch (e) { /* sin plantilla en nube */ }
+  }
+  // Fallback localStorage
+  try {
+    const s = localStorage.getItem('buildflow_tpl_v1');
+    if (s) {
+      const tpl = JSON.parse(s);
+      DATA.pdf_templates = DATA.pdf_templates.filter(t => t.id !== tpl.id);
+      DATA.pdf_templates.unshift({ ...tpl, is_default: true });
+    }
+  } catch (e) { /* sin plantilla local */ }
+}
+
+async function setDefaultTemplatePDF(id) {
+  DATA.pdf_templates.forEach(t => t.is_default = t.id === id);
+  if (isConnected) {
+    await db.from('pdf_templates').update({ is_default: false }).neq('id', '___');
+    await db.from('pdf_templates').update({ is_default: true }).eq('id', id);
+  }
+  toast('Plantilla predeterminada actualizada', 'ok');
+  switchView('plantillas');
+}
+
+async function deleteTemplatePDF(id) {
+  if (!confirm('¿Eliminar esta plantilla? Las cotizaciones quedarán sin membrete.')) return;
+  DATA.pdf_templates = DATA.pdf_templates.filter(t => t.id !== id);
+  if (isConnected) {
+    await db.from('app_settings').delete().eq('key', 'quote_template_buildflow');
+    await db.from('pdf_templates').delete().eq('id', id);
+  }
+  localStorage.removeItem('buildflow_tpl_v1');
+  toast('Plantilla eliminada', 'ok');
+  switchView('plantillas');
+}
+
+// Obtener la plantilla activa (páginas como imágenes)
+function getActivaTemplatePDF() {
+  return DATA.pdf_templates.find(t => t.is_default && t.pages && t.pages.length > 0) || null;
+}
 function renderBitacoraTab(){
   return `<div class="card">
     <div class="card-header">
@@ -2754,35 +2950,101 @@ function exportPayrollPDF(){
   doc.save('nomina_buildflow.pdf');
 }
 
-function generateQuotePDF(id){
-  const q=DATA.quotes.find(c=>c.id===id); if(!q) return;
-  const defaultTpl=DATA.pdf_templates.find(t=>t.is_default);
-  const{jsPDF}=window.jspdf; const doc=new jsPDF();
-  let topOffset=0;
-  if(defaultTpl&&defaultTpl.name){
-    doc.setFillColor(26,158,106); doc.rect(0,0,210,8,'F');
-    doc.setFontSize(7); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
-    doc.text('Plantilla: '+defaultTpl.name,5,5.5); topOffset=8;
+function generateQuotePDF(id) {
+  const q = DATA.quotes.find(c => c.id === id); if (!q) return;
+  const tpl = getActivaTemplatePDF();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  if (tpl && tpl.pages && tpl.pages[0]) {
+    // Usar la plantilla como imagen de fondo completa (igual que Oceango)
+    doc.addImage(tpl.pages[0], 'JPEG', 0, 0, 210, 297);
+
+    // Contenido encima del membrete (con padding para no pisar el logo)
+    const padTop = 48; // mm desde arriba — ajusta según tu membrete
+    doc.setTextColor(12, 41, 65);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+    doc.text('COTIZACIÓN ' + q.id, 14, padTop);
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 100, 100);
+    doc.text('Fecha: ' + q.date + '   ·   Validez: ' + (q.validity_days || 30) + ' días', 14, padTop + 7);
+
+    // Línea separadora
+    doc.setDrawColor(200, 210, 220); doc.line(14, padTop + 10, 196, padTop + 10);
+
+    // Cliente y descripción
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(12, 41, 65);
+    doc.text('CLIENTE', 14, padTop + 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(60, 70, 85);
+    doc.text(q.client, 14, padTop + 26);
+    if (q.description) {
+      const lines = doc.splitTextToSize(q.description, 120);
+      doc.text(lines, 14, padTop + 34);
+    }
+
+    // Cuadro de totales
+    const ty = padTop + 55;
+    doc.setFillColor(245, 247, 250); doc.roundedRect(120, ty, 76, 38, 3, 3, 'F');
+    doc.setDrawColor(200, 210, 220); doc.roundedRect(120, ty, 76, 38, 3, 3, 'S');
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 110, 120);
+    doc.text('Subtotal:', 124, ty + 9);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(12, 41, 65);
+    doc.text('$' + (q.subtotal || 0).toFixed(2), 178, ty + 9, { align: 'right' });
+
+    if (q.iva_applied) {
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 110, 120);
+      doc.text('IVA ' + (q.iva_pct || 15) + '%:', 124, ty + 17);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(215, 119, 6);
+      doc.text('$' + (q.iva || 0).toFixed(2), 178, ty + 17, { align: 'right' });
+    }
+
+    doc.setDrawColor(180, 190, 200); doc.line(122, ty + 22, 194, ty + 22);
+    doc.setFillColor(12, 41, 65); doc.roundedRect(120, ty + 24, 76, 12, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255, 165, 0);
+    doc.text('TOTAL:', 124, ty + 32);
+    doc.text('$' + (q.total || 0).toFixed(2), 193, ty + 32, { align: 'right' });
+
+    // Si hay más páginas de plantilla, agregar página 2
+    if (tpl.pages.length > 1) {
+      doc.addPage();
+      doc.addImage(tpl.pages[1], 'JPEG', 0, 0, 210, 297);
+    }
+
+  } else {
+    // Sin plantilla: diseño propio como antes
+    doc.setFillColor(12, 41, 65); doc.rect(0, 0, 210, 42, 'F');
+    doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 165, 0);
+    doc.text('BuildFlow EC', 14, 18);
+    doc.setFontSize(9); doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'normal');
+    doc.text('Construcción · Ecuador', 14, 27);
+    doc.setFontSize(15); doc.setTextColor(255, 165, 0); doc.setFont('helvetica', 'bold');
+    doc.text('COTIZACIÓN ' + q.id, 130, 18);
+    doc.setFontSize(9); doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'normal');
+    doc.text('Fecha: ' + q.date, 130, 27);
+    doc.text('Validez: ' + (q.validity_days || 30) + ' días', 130, 35);
+
+    const y2 = 52;
+    doc.setTextColor(12, 41, 65); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('Cliente: ' + q.client, 14, y2 + 8);
+    doc.text('Trabajo: ' + (q.description || ''), 14, y2 + 16);
+
+    doc.setFillColor(240, 242, 245); doc.rect(110, y2 + 55, 86, 32, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(12, 41, 65);
+    doc.text('Subtotal:', 112, y2 + 65);
+    doc.text('$' + (q.subtotal || 0).toFixed(2), 172, y2 + 65);
+    if (q.iva_applied) {
+      doc.setTextColor(215, 119, 6);
+      doc.text('IVA ' + (q.iva_pct || 15) + '%:', 112, y2 + 73);
+      doc.text('$' + (q.iva || 0).toFixed(2), 172, y2 + 73);
+    }
+    doc.setFillColor(12, 41, 65); doc.rect(110, y2 + 79, 86, 14, 'F');
+    doc.setTextColor(255, 165, 0); doc.setFontSize(12);
+    doc.text('TOTAL:', 112, y2 + 88);
+    doc.text('$' + (q.total || 0).toFixed(2), 160, y2 + 88);
   }
-  doc.setFillColor(12,41,65); doc.rect(0,topOffset,210,42,'F');
-  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(255,165,0); doc.text('BuildFlow EC',14,topOffset+18);
-  doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.text('Construcción · Ecuador',14,topOffset+27);
-  doc.setFontSize(15); doc.setTextColor(255,165,0); doc.setFont('helvetica','bold'); doc.text('COTIZACIÓN '+q.id,130,topOffset+18);
-  doc.setFontSize(9); doc.setTextColor(255,255,255); doc.setFont('helvetica','normal');
-  doc.text('Fecha: '+q.date,130,topOffset+27); doc.text('Validez: '+(q.validity_days||30)+' días',130,topOffset+35);
-  const y2=topOffset+52;
-  doc.setTextColor(12,41,65); doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.text('CLIENTE',14,y2);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text('Nombre: '+q.client,14,y2+8); doc.text('Trabajo: '+(q.description||''),14,y2+16);
-  doc.setFillColor(240,242,245); doc.rect(110,y2+55,86,32,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(12,41,65);
-  doc.text('Subtotal:',112,y2+65); doc.text('$'+(q.subtotal||0).toFixed(2),172,y2+65);
-  if(q.iva_applied){ doc.setTextColor(215,119,6); doc.text(`IVA ${q.iva_pct||15}%:`,112,y2+73); doc.text('$'+(q.iva||0).toFixed(2),172,y2+73); }
-  doc.setFillColor(12,41,65); doc.rect(110,y2+79,86,14,'F');
-  doc.setTextColor(255,165,0); doc.setFontSize(12); doc.text('TOTAL:',112,y2+88); doc.text('$'+(q.total||0).toFixed(2),160,y2+88);
-  doc.setFontSize(8); doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
-  doc.text('Validez '+(q.validity_days||30)+' días. Precios en USD. IVA '+((q.iva_pct)||15)+'%',14,y2+104);
-  doc.text('BuildFlow EC · '+new Date().toLocaleDateString('es-EC'),14,285);
-  doc.save(q.id+'_cotizacion_'+q.client.replace(/\s/g,'_')+'.pdf');
+
+  doc.save(q.id + '_cotizacion_' + q.client.replace(/\s/g, '_') + '.pdf');
 }
 
 function exportAllQuotesPDF(){
