@@ -741,8 +741,7 @@ async function initApp(mode){
     document.getElementById('btn-report').style.display='none';
   }
   buildNav(mode);
-  showLoader('Cargando datos…'); await loadAllData(); hideLoader();
-  switchView('dashboard');
+showLoader('Cargando datos…'); await loadAllData(); await loadTemplatePDF(); hideLoader();  switchView('dashboard');
 }
 function refreshNav(){ if(currentMode) buildNav(currentMode); }
 
@@ -1496,10 +1495,6 @@ function filterPayroll(){
   const proj=document.getElementById('payroll-proj')?.value||'';
   const status=document.getElementById('payroll-status')?.value||'';
   const activo=document.getElementById('payroll-activo')?.value||'';
-  const from = document.getElementById('payroll-date-from')?.value;
-  const to = document.getElementById('payroll-date-to')?.value;
-  if(from) rows = rows.filter(p => (p.date||'') >= from);
-  if(to)   rows = rows.filter(p => (p.date||'') <= to);
   let rows=DATA.payroll;
   if(proj) rows=rows.filter(p=>p.project===proj);
   if(status) rows=rows.filter(p=>p.status===status);
