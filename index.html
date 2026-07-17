@@ -631,7 +631,19 @@ async function uploadPhotoToStorage(file, folder='bitacora'){
 
 function projectName(id){ const p=DATA.projects.find(p=>p.id===id); return p?p.name:(id||'—'); }
 function clientName(id){ const c=DATA.clients.find(c=>c.id===id); return c?c.name:(id||'—'); }
+function projectName(id){ const p=DATA.projects.find(p=>p.id===id); return p?p.name:(id||'—'); }
+function clientName(id){ const c=DATA.clients.find(c=>c.id===id); return c?c.name:(id||'—'); }
 
+function nextId(prefix, arr){
+  let max=0;
+  arr.forEach(r=>{
+    if(r.id && r.id.startsWith(prefix)){
+      const n=parseInt(r.id.slice(prefix.length),10);
+      if(!isNaN(n) && n>max) max=n;
+    }
+  });
+  return prefix+(max+1).toString().padStart(4,'0');
+}
 // ── PINS & LOGIN ──
 const PINS={ops:'2000',adm:'100074'};
 let currentMode=null,currentPin='',currentView='dashboard',editingId=null;
@@ -2682,10 +2694,10 @@ async function saveModal(){
     if(isEdit) await dbUpdate('expenses',editingId,updates);
     else{
       const prefix=t==='ingreso'?'ING-':'GAS-';
-      const id=prefix+(DATA.expenses.length+1).toString().padStart(4,'0');
+      const id=nextId(prefix,DATA.expenses);
       await dbInsert('expenses',{id,...updates,date:new Date().toLocaleDateString('es-EC')});
     }
-
+    
   } else if(t==='quote'){
     let sub=0;
     for(let i=0;i<3;i++){ const q=parseFloat(document.getElementById('qi-qty-'+i)?.value)||0; const p=parseFloat(document.getElementById('qi-price-'+i)?.value)||0; sub+=q*p; }
