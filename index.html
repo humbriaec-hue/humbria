@@ -160,6 +160,7 @@ tr:hover td{background:var(--gray-50)}
 .e-completado{background:var(--blue-bg);color:var(--blue)}
 .e-retrasado{background:var(--red-bg);color:var(--red)}
 .e-pagado{background:var(--green-bg);color:var(--green)}
+.e-abonado{background:var(--amber-bg);color:var(--amber)}
 .e-borrador{background:var(--gray-100);color:var(--gray-500)}
 .e-inactivo{background:var(--gray-100);color:var(--gray-500)}
 
@@ -567,6 +568,7 @@ const LOCAL = {
   ],
   bitacora:[],
   attendance:[],
+  abonos:[],
 };
 
 let DATA = JSON.parse(JSON.stringify(LOCAL));
@@ -589,8 +591,9 @@ async function loadAllData(){
   db.from('clients').select('*').order('id'),
   db.from('inv_movimientos').select('*').order('date',{ascending:false}),
   db.from('attendance').select('*').order('date',{ascending:false}),
+  db.from('abonos').select('*').order('fecha',{ascending:false}),
 ]);
-const keys=['projects','tasks','payroll','expenses','inventory','staff','staff_assignments','quotes','pdf_templates','bitacora','clients','inv_movimientos','attendance'];
+const keys=['projects','tasks','payroll','expenses','inventory','staff','staff_assignments','quotes','pdf_templates','bitacora','clients','inv_movimientos','attendance','abonos'];
     fetches.forEach(({data,error},i)=>{ if(!error&&data&&data.length>0) DATA[keys[i]]=data; });
     toast('Datos cargados desde Supabase','ok');
   } catch(e){ toast('Error al cargar: '+e.message,'err'); }
@@ -1341,21 +1344,55 @@ function renderPresupuesto(){
   </div>`;
 }
 
-// ── GASTOS & COBROS ──
-function renderGastos(){
-  const gastos=DATA.expenses.filter(e=>e.tipo==='gasto');
-  const ingresos=DATA.expenses.filter(e=>e.tipo==='ingreso');
-  const totalG=gastos.reduce((s,g)=>s+g.total,0);
-  const totalI=ingresos.reduce((s,g)=>s+g.total,0);
-  const totalSub=gastos.reduce((s,g)=>s+g.subtotal,0);
-  const totalIva=gastos.reduce((s,g)=>s+g.iva,0);
+// ── GASTOS & COBROS (con módulo de abonos/conciliaciones + filtro de fechas) ──
+// Helpers de abonos
+function getAbonos(expId){ return DATA.abonos.filter(a=>a.expense_id===expId); }
+function getTotalAbonado(expId){ return getAbonos(expId).reduce((s,a)=>s+(parseFloat(a.monto)||0),0); }
+function getEstadoPago(exp){
+  if(exp.tipo!=='gasto') return {abonado:0,saldo:0,estado:'—'};
+  const abonado=getTotalAbonado(exp.id);
+  const saldo=Math.max(0,round2((exp.total||0)-abonado));
+  let estado='pendiente';
+  if(abonado>0 && saldo>0.005) estado='abonado';
+  else if(saldo<=0.005 && (exp.total||0)>0) estado='pagado';
+  return {abonado,saldo,estado};
+}
+function round2(n){ return Math.round((n+Number.EPSILON)*100)/100; }
 
-  return `<div class="metrics col4" style="margin-bottom:12px">
-    <div class="metric"><div class="metric-label">Total gastos</div><div class="metric-value num" style="color:var(--red)">${$m(totalG)}</div></div>
-    <div class="metric"><div class="metric-label">IVA en gastos</div><div class="metric-value num" style="color:var(--amber)">${$m(totalIva)}</div></div>
-    <div class="metric"><div class="metric-label">Cobros / Ingresos</div><div class="metric-value num" style="color:var(--green)">${$m(totalI)}</div></div>
-    <div class="metric"><div class="metric-label">Saldo neto</div><div class="metric-value num" style="color:${totalI-totalG>=0?'var(--green)':'var(--red)'}">${$m(totalI-totalG)}</div></div>
+let gastosDateFrom='', gastosDateTo='';
+
+function filterExpensesByDateRange(from,to){
+  let rows=DATA.expenses;
+  if(from) rows=rows.filter(e=>e.date>=from);
+  if(to) rows=rows.filter(e=>e.date<=to);
+  return rows;
+}
+function filterAbonosByDateRange(from,to){
+  let rows=DATA.abonos;
+  if(from) rows=rows.filter(a=>a.fecha>=from);
+  if(to) rows=rows.filter(a=>a.fecha<=to);
+  return rows;
+}
+
+function renderGastos(){
+  gastosDateFrom=document.getElementById('gastos-date-from')?.value||gastosDateFrom||'';
+  gastosDateTo=document.getElementById('gastos-date-to')?.value||gastosDateTo||'';
+
+  return `<div class="card" style="margin-bottom:12px">
+    <div class="filter-bar">
+      <div class="form-group" style="gap:3px">
+        <label class="form-label" style="font-size:9px">Desde</label>
+        <input class="form-input" type="date" id="gastos-date-from" value="${gastosDateFrom}" onchange="applyGastosDateFilter()">
+      </div>
+      <div class="form-group" style="gap:3px">
+        <label class="form-label" style="font-size:9px">Hasta</label>
+        <input class="form-input" type="date" id="gastos-date-to" value="${gastosDateTo}" onchange="applyGastosDateFilter()">
+      </div>
+      <button class="btn-ghost" style="font-size:11px;padding:6px 11px;margin-top:14px" onclick="clearGastosDateFilter()"><i class="ti ti-x"></i> Limpiar filtro</button>
+      <span style="font-size:11px;color:var(--gray-400);margin-top:14px">${gastosDateFrom||gastosDateTo?`Mostrando ${gastosDateFrom||'…'} → ${gastosDateTo||'…'}`:'Mostrando todos los registros'}</span>
+    </div>
   </div>
+  <div id="gastos-metrics-wrap">${renderGastosMetrics()}</div>
   <div class="card">
     <div class="card-header">
       <span class="card-title">Movimientos financieros</span>
@@ -1364,26 +1401,179 @@ function renderGastos(){
         <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('expense')"><i class="ti ti-minus"></i> Gasto</button>
       </div>
     </div>
-    <table><thead><tr><th>Código</th><th>Tipo</th><th>Descripción</th><th>Categoría</th><th>Proyecto</th><th>Factura</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Estado</th><th>Acc.</th></tr></thead>
-    <tbody>${DATA.expenses.map(g=>`<tr class="${g.tipo==='ingreso'?'ingreso-row':''}">
+    <div id="gastos-table-wrap">${renderGastosTable()}</div>
+  </div>
+  <div class="info-box"><i class="ti ti-receipt"></i>
+    <p>El <strong>% de IVA es editable</strong> por registro (0%, 5%, 15% u otro). Registra cobros de clientes como <span>Ingresos</span>. Usa <strong>Registrar Abono</strong> en cada gasto para llevar pagos parciales.</p>
+  </div>`;
+}
+
+function renderGastosMetrics(){
+  const rows=filterExpensesByDateRange(gastosDateFrom,gastosDateTo);
+  const gastos=rows.filter(e=>e.tipo==='gasto');
+  const ingresos=rows.filter(e=>e.tipo==='ingreso');
+  const totalG=gastos.reduce((s,g)=>s+g.total,0);
+  const totalI=ingresos.reduce((s,g)=>s+g.total,0);
+
+  // Total abonado: suma de abonos cuya FECHA DE ABONO cae en el rango (independiente de la fecha de la factura)
+  const abonosEnRango=filterAbonosByDateRange(gastosDateFrom,gastosDateTo);
+  const totalAbonado=abonosEnRango.reduce((s,a)=>s+(parseFloat(a.monto)||0),0);
+
+  // Total por pagar: saldo pendiente acumulado de las facturas (gastos) del periodo filtrado
+  const totalPorPagar=gastos.reduce((s,g)=>s+getEstadoPago(g).saldo,0);
+
+  return `<div class="metrics col4" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-label">Total gastos (periodo)</div><div class="metric-value num" style="color:var(--red)">${$m(totalG)}</div></div>
+    <div class="metric clickable" onclick="openDesgloseAbonado()"><div class="metric-label">Total abonado (periodo)</div><div class="metric-value num" style="color:var(--amber)">${$m(totalAbonado)}</div><div class="metric-change warn"><i class="ti ti-click"></i> Ver desglose</div></div>
+    <div class="metric clickable" onclick="openDesglosePendiente()"><div class="metric-label">Total por pagar</div><div class="metric-value num" style="color:var(--red)">${$m(totalPorPagar)}</div><div class="metric-change warn"><i class="ti ti-click"></i> Ver desglose</div></div>
+    <div class="metric"><div class="metric-label">Cobros / Ingresos</div><div class="metric-value num" style="color:var(--green)">${$m(totalI)}</div></div>
+  </div>`;
+}
+
+function applyGastosDateFilter(){
+  gastosDateFrom=document.getElementById('gastos-date-from')?.value||'';
+  gastosDateTo=document.getElementById('gastos-date-to')?.value||'';
+  document.getElementById('gastos-metrics-wrap').innerHTML=renderGastosMetrics();
+  document.getElementById('gastos-table-wrap').innerHTML=renderGastosTable();
+}
+function clearGastosDateFilter(){
+  gastosDateFrom=''; gastosDateTo='';
+  const f=document.getElementById('gastos-date-from'); if(f) f.value='';
+  const t=document.getElementById('gastos-date-to'); if(t) t.value='';
+  applyGastosDateFilter();
+}
+
+function renderGastosTable(){
+  const rows=filterExpensesByDateRange(gastosDateFrom,gastosDateTo);
+  if(rows.length===0) return '<p style="color:var(--gray-400);font-size:12px;padding:16px 0">Sin registros para el periodo filtrado.</p>';
+  return `<table><thead><tr><th>Código</th><th>Tipo</th><th>Descripción</th><th>Categoría</th><th>Proyecto</th><th>Factura</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Abonado</th><th>Saldo</th><th>Estado</th><th>Acc.</th></tr></thead>
+    <tbody>${rows.map(g=>{
+      const ep=getEstadoPago(g);
+      return `<tr class="${g.tipo==='ingreso'?'ingreso-row':''}">
       <td class="num-cell" style="color:${g.tipo==='ingreso'?'var(--green)':'var(--orange)'};font-size:10px">${g.id}</td>
       <td><span class="estado-badge e-${g.tipo==='ingreso'?'activo':'retrasado'}" style="font-size:9px">${g.tipo==='ingreso'?'↑ Ingreso':'↓ Gasto'}</span></td>
-      <td style="font-weight:500;color:var(--navy)">${g.description}</td>
+      <td style="font-weight:500;color:var(--navy);cursor:pointer" onclick="${g.tipo==='gasto'?`openGastoDetail('${g.id}')`:''}">${g.description}</td>
       <td>${g.category||''}</td><td>${projectName(g.project)}</td>
       <td style="font-size:11px;color:var(--gray-400)">${g.invoice||'—'}</td>
       <td class="num-cell">${$m(g.subtotal)}</td>
       <td class="num-cell">${g.iva_applied?`<span style="color:var(--amber)">${$m(g.iva)} (${g.iva_pct||15}%)</span>`:'—'}</td>
       <td class="num-cell" style="font-weight:500;color:${g.tipo==='ingreso'?'var(--green)':'var(--navy)'}">${$m(g.total)}</td>
-      <td><span class="estado-badge e-${g.status==='aprobado'?'activo':'pendiente'}">${g.status}</span></td>
+      <td class="num-cell" style="color:var(--amber)">${g.tipo==='gasto'?$m(ep.abonado):'—'}</td>
+      <td class="num-cell" style="color:var(--red)">${g.tipo==='gasto'?$m(ep.saldo):'—'}</td>
+      <td>${g.tipo==='gasto'?`<span class="estado-badge e-${ep.estado}">${ep.estado}</span>`:`<span class="estado-badge e-${g.status==='aprobado'?'activo':'pendiente'}">${g.status}</span>`}</td>
       <td><div class="act-cell">
+        ${g.tipo==='gasto'?`<button class="btn-edit-sm" style="background:var(--amber-bg);color:var(--amber)" onclick="openGastoDetail('${g.id}')"><i class="ti ti-cash" style="font-size:10px"></i> Abonos</button>`:''}
         <button class="btn-edit-sm" onclick="openEditModal('${g.tipo==='ingreso'?'ingreso':'expense'}','${g.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
         <button class="btn-danger-sm" onclick="confirmDelete('expenses','${g.id}','registro')"><i class="ti ti-trash" style="font-size:10px"></i></button>
       </div></td>
-    </tr>`).join('')}</tbody></table>
-  </div>
-  <div class="info-box"><i class="ti ti-receipt"></i>
-    <p>El <strong>% de IVA es editable</strong> por registro (0%, 5%, 15% u otro). Registra cobros de clientes como <span>Ingresos</span>.</p>
-  </div>`;
+    </tr>`;}).join('')}</tbody></table>`;
+}
+
+// ── DETALLE DE GASTO: historial de abonos + registrar nuevo ──
+function openGastoDetail(id){
+  const exp=DATA.expenses.find(e=>e.id===id); if(!exp) return;
+  const ep=getEstadoPago(exp);
+  const abonos=getAbonos(id).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  document.getElementById('modal-title').textContent='Conciliación — '+exp.description;
+  document.getElementById('modal-box').className='modal';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="metrics col3" style="margin-bottom:14px">
+      <div class="metric"><div class="metric-label">Total factura</div><div class="metric-value num">${$m(exp.total)}</div></div>
+      <div class="metric"><div class="metric-label">Abonado</div><div class="metric-value num" style="color:var(--amber)">${$m(ep.abonado)}</div></div>
+      <div class="metric"><div class="metric-label">Saldo pendiente</div><div class="metric-value num" style="color:${ep.saldo<=0?'var(--green)':'var(--red)'}">${$m(ep.saldo)}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span class="estado-badge e-${ep.estado}" style="font-size:11px">${ep.estado}</span>
+      <span style="font-size:11px;color:var(--gray-400)">Proyecto: ${projectName(exp.project)} · Factura: ${exp.invoice||'—'}</span>
+    </div>
+    ${ep.saldo>0.005?`
+    <div class="card" style="background:var(--gray-50);margin-bottom:14px">
+      <div class="form-grid col2">
+        <div class="form-group"><label class="form-label">Monto del abono ($)</label><input class="form-input" type="number" id="f-abmonto" max="${ep.saldo}" step="0.01" placeholder="Máx. ${ep.saldo.toFixed(2)}"></div>
+        <div class="form-group"><label class="form-label">Fecha del abono</label><input class="form-input" type="date" id="f-abfecha" value="${new Date().toISOString().split('T')[0]}"></div>
+      </div>
+      <button class="btn-primary" style="margin-top:10px;font-size:11px;padding:7px 14px" onclick="registrarAbono('${id}')"><i class="ti ti-plus"></i> Registrar Abono</button>
+    </div>`:`<div class="info-box" style="margin:0 0 14px"><i class="ti ti-circle-check"></i><p>Esta factura está <strong>totalmente pagada</strong>.</p></div>`}
+    <div class="card-title" style="margin-bottom:8px">Historial de abonos (${abonos.length})</div>
+    ${abonos.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin abonos registrados aún.</p>':
+    `<table><thead><tr><th>Fecha</th><th>Monto</th><th>Registrado por</th></tr></thead>
+    <tbody>${abonos.map(a=>`<tr><td>${a.fecha}</td><td class="num-cell" style="color:var(--green)">${$m(a.monto)}</td><td style="font-size:11px">${a.created_by||'—'}</td></tr>`).join('')}</tbody></table>`}
+  `;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+async function registrarAbono(expId){
+  const exp=DATA.expenses.find(e=>e.id===expId); if(!exp) return;
+  const monto=parseFloat(document.getElementById('f-abmonto')?.value)||0;
+  const fecha=document.getElementById('f-abfecha')?.value;
+  const ep=getEstadoPago(exp);
+  if(monto<=0){ toast('Ingresa un monto válido','err'); return; }
+  if(monto>ep.saldo+0.005){ toast('El abono no puede superar el saldo pendiente ('+$m(ep.saldo)+')','err'); return; }
+  if(!fecha){ toast('Selecciona la fecha del abono','err'); return; }
+
+  const id='ABN-'+Date.now();
+  await dbInsert('abonos',{id,expense_id:expId,monto,fecha,created_by:currentMode==='adm'?'Administrador':'Operaciones'});
+
+  const newEp=getEstadoPago(exp);
+  await dbUpdate('expenses',expId,{saldo_pendiente:newEp.saldo,estado_pago:newEp.estado});
+
+  toast(newEp.estado==='pagado'?'¡Factura pagada por completo!':'Abono registrado. Saldo: '+$m(newEp.saldo),'ok');
+  openGastoDetail(expId);
+  document.getElementById('gastos-metrics-wrap').innerHTML=renderGastosMetrics();
+  document.getElementById('gastos-table-wrap').innerHTML=renderGastosTable();
+}
+
+// ── MODAL DE DESGLOSE: TOTAL ABONADO ──
+function openDesgloseAbonado(){
+  const abonosEnRango=filterAbonosByDateRange(gastosDateFrom,gastosDateTo).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const total=abonosEnRango.reduce((s,a)=>s+(parseFloat(a.monto)||0),0);
+  document.getElementById('modal-title').textContent='Desglose — Total Abonado';
+  document.getElementById('modal-box').className='modal wide';
+  document.getElementById('modal-body').innerHTML=`
+    <div style="font-size:11px;color:var(--gray-400);margin-bottom:10px">Periodo: ${gastosDateFrom||'…'} → ${gastosDateTo||'…'} · ${abonosEnRango.length} abono(s)</div>
+    ${abonosEnRango.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin abonos en el periodo.</p>':
+    `<table><thead><tr><th>Fecha del abono</th><th>Concepto / Proveedor</th><th>Monto</th></tr></thead>
+    <tbody>${abonosEnRango.map(a=>{
+      const exp=DATA.expenses.find(e=>e.id===a.expense_id);
+      return `<tr style="cursor:pointer" onclick="closeModal();setTimeout(()=>openGastoDetail('${a.expense_id}'),80)">
+        <td>${a.fecha}</td>
+        <td style="font-weight:500;color:var(--navy)">${exp?exp.description:a.expense_id}</td>
+        <td class="num-cell" style="color:var(--amber);font-weight:500">${$m(a.monto)}</td>
+      </tr>`;}).join('')}
+    </tbody>
+    <tfoot><tr><td colspan="2" style="font-weight:700;font-family:var(--fd);padding:10px 9px">TOTAL</td>
+    <td class="num-cell" style="color:var(--amber);font-weight:700;font-size:14px">${$m(total)}</td></tr></tfoot></table>`}
+  `;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+// ── MODAL DE DESGLOSE: TOTAL POR PAGAR ──
+function openDesglosePendiente(){
+  const gastos=filterExpensesByDateRange(gastosDateFrom,gastosDateTo).filter(e=>e.tipo==='gasto');
+  const pendientes=gastos.map(g=>({exp:g,ep:getEstadoPago(g)})).filter(x=>x.ep.saldo>0.005)
+    .sort((a,b)=>(a.exp.date||'').localeCompare(b.exp.date||''));
+  const total=pendientes.reduce((s,x)=>s+x.ep.saldo,0);
+  document.getElementById('modal-title').textContent='Desglose — Total por Pagar';
+  document.getElementById('modal-box').className='modal wide';
+  document.getElementById('modal-body').innerHTML=`
+    <div style="font-size:11px;color:var(--gray-400);margin-bottom:10px">Periodo: ${gastosDateFrom||'…'} → ${gastosDateTo||'…'} · ${pendientes.length} factura(s) con saldo</div>
+    ${pendientes.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin saldos pendientes en el periodo.</p>':
+    `<table><thead><tr><th>Fecha emisión</th><th>Proveedor / Concepto</th><th>Total factura</th><th>Abonado</th><th>Saldo restante</th></tr></thead>
+    <tbody>${pendientes.map(x=>`<tr style="cursor:pointer" onclick="closeModal();setTimeout(()=>openGastoDetail('${x.exp.id}'),80)">
+        <td>${x.exp.date||'—'}</td>
+        <td style="font-weight:500;color:var(--navy)">${x.exp.description}</td>
+        <td class="num-cell">${$m(x.exp.total)}</td>
+        <td class="num-cell" style="color:var(--amber)">${$m(x.ep.abonado)}</td>
+        <td class="num-cell" style="color:var(--red);font-weight:500">${$m(x.ep.saldo)}</td>
+      </tr>`).join('')}
+    </tbody>
+    <tfoot><tr><td colspan="4" style="font-weight:700;font-family:var(--fd);padding:10px 9px">TOTAL SALDO PENDIENTE</td>
+    <td class="num-cell" style="color:var(--red);font-weight:700;font-size:14px">${$m(total)}</td></tr></tfoot></table>`}
+  `;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  document.getElementById('modal-backdrop').classList.add('open');
 }
 
 // ── CLIENTES ──
@@ -2115,6 +2305,7 @@ function buildModal(type,data,extra){
           <span style="font-size:11px;color:var(--gray-400)">(Ecuador 2025: 15% general)</span>
         </div>
       </div>
+      <div class="form-group"><label class="form-label">Fecha de emisión</label><input class="form-input" type="date" id="f-gdate" value="${g.date&&/^\\d{4}-\\d{2}-\\d{2}$/.test(g.date)?g.date:new Date().toISOString().split('T')[0]}"></div>
       <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="f-gstatus"><option value="pendiente" ${(g.status||'')==='pendiente'?'selected':''}>Pendiente</option><option value="aprobado" ${g.status==='aprobado'?'selected':''}>Aprobado</option></select></div>
     </div>
     <div class="calc-preview">
@@ -2532,6 +2723,13 @@ function confirmDelete(table,id,label){
     revertirBitacora(id);
     return;
   }
+  if(table==='expenses'){
+    const exp=DATA.expenses.find(e=>e.id===id);
+    if(exp && exp.tipo==='gasto' && getAbonos(id).length>0){
+      if(!confirm(`Este gasto tiene ${getAbonos(id).length} abono(s) registrados. Al eliminarlo también se eliminará su historial de abonos. ¿Continuar?`)) return;
+      DATA.abonos.filter(a=>a.expense_id===id).forEach(a=>dbDelete('abonos',a.id));
+    }
+  }
   if(confirm(`¿Eliminar este ${label}? Esta acción no se puede deshacer.`)){
     dbDelete(table,id).then(()=>{ refreshNav(); switchView(currentView); });
   }
@@ -2687,15 +2885,19 @@ async function saveModal(){
     const iva_applied=document.getElementById('f-giva').checked;
     const iva_pct=parseFloat(document.getElementById('f-givapct').value)||15;
     const iva=iva_applied?subtotal*(iva_pct/100):0;
+    const fechaEmision=document.getElementById('f-gdate')?.value||new Date().toISOString().split('T')[0];
+    const total=subtotal+iva;
     const updates={description:document.getElementById('f-gdesc').value,category:document.getElementById('f-gcat').value,
       project:document.getElementById('f-gproj').value,invoice:document.getElementById('f-ginv').value||'—',
-      subtotal,iva_applied,iva_pct,iva,total:subtotal+iva,status:document.getElementById('f-gstatus').value,
+      subtotal,iva_applied,iva_pct,iva,total,status:document.getElementById('f-gstatus').value,
+      date:fechaEmision,
       tipo:t==='ingreso'?'ingreso':'gasto'};
+    if(t==='expense'){ updates.saldo_pendiente=total; updates.estado_pago='pendiente'; }
     if(isEdit) await dbUpdate('expenses',editingId,updates);
     else{
       const prefix=t==='ingreso'?'ING-':'GAS-';
       const id=nextId(prefix,DATA.expenses);
-      await dbInsert('expenses',{id,...updates,date:new Date().toLocaleDateString('es-EC')});
+      await dbInsert('expenses',{id,...updates});
     }
     
   } else if(t==='quote'){
