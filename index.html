@@ -1364,7 +1364,7 @@ function renderGastos(){
       <td class="num-cell" style="font-weight:500;color:${g.tipo==='ingreso'?'var(--green)':'var(--navy)'}">${$m(g.total)}</td>
       <td><span class="estado-badge e-${g.status==='aprobado'?'activo':'pendiente'}">${g.status}</span></td>
       <td><div class="act-cell">
-        <button class="btn-edit-sm" onclick="openEditModal('expense','${g.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
+        <button class="btn-edit-sm" onclick="openEditModal('${g.tipo==='ingreso'?'ingreso':'expense'}','${g.id}')"><i class="ti ti-edit" style="font-size:10px"></i></button>
         <button class="btn-danger-sm" onclick="confirmDelete('expenses','${g.id}','registro')"><i class="ti ti-trash" style="font-size:10px"></i></button>
       </div></td>
     </tr>`).join('')}</tbody></table>
