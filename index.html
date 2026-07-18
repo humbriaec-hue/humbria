@@ -1474,6 +1474,11 @@ function openGastoDetail(id){
   const exp=DATA.expenses.find(e=>e.id===id); if(!exp) return;
   const ep=getEstadoPago(exp);
   const abonos=getAbonos(id).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  document.getElementById('modal-title').textContent='Conci// ── DETALLE DE GASTO: historial de abonos + registrar nuevo ──
+function openGastoDetail(id){
+  const exp=DATA.expenses.find(e=>e.id===id); if(!exp) return;
+  const ep=getEstadoPago(exp);
+  const abonos=getAbonos(id).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
   document.getElementById('modal-title').textContent='Conciliación — '+exp.description;
   document.getElementById('modal-box').className='modal';
   document.getElementById('modal-body').innerHTML=`
