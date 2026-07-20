@@ -812,6 +812,27 @@ function kpi(){
 }
 function $m(n){ return '$'+Number(n||0).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
+  function getFinancialSummary(p){
+  const ingresos = DATA.expenses.filter(e=>e.project===p.id && e.tipo==='ingreso').reduce((s,e)=>s+e.total,0);
+  const gastos   = DATA.expenses.filter(e=>e.project===p.id && e.tipo==='gasto').reduce((s,e)=>s+e.total,0);
+  const budget   = p.budget || 0;
+
+  const aplicaRet = !!p.aplica_retenciones;
+  const retPct = (p.retencion_pct || 0) / 100;
+  const garPct = (p.garantia_pct || 0) / 100;
+  const retMonto = aplicaRet ? budget * retPct : 0;
+  const garMonto = aplicaRet ? budget * garPct : 0;
+
+  const porCobrarBruto = Math.max(0, budget - ingresos);
+  const porCobrarNeto  = Math.max(0, budget - ingresos - retMonto - garMonto);
+
+  const progresoFinanciero = budget>0 ? Math.round((ingresos/budget)*100) : 0;
+  const desviacion = budget - gastos;          // + = bajo presupuesto, - = sobregasto
+  const pctEjecutado = budget>0 ? Math.round((gastos/budget)*100) : 0;
+
+  return {ingresos,gastos,budget,retMonto,garMonto,porCobrarBruto,porCobrarNeto,progresoFinanciero,desviacion,pctEjecutado,aplicaRet};
+}
+  
 // ══ DASHBOARD ══
 function renderDashboard(){
   const isAdm=currentMode==='adm'; const k=kpi();
@@ -960,20 +981,26 @@ function renderObras(){
     </tbody></table>
   </div>`;
 }
+let currentObraTab='financiero';
 
 function goToObraDetail(pid, pname){
   currentView='obras_detail';
+  currentObraTab='financiero';
   document.getElementById('page-title').textContent=pname;
   document.getElementById('main-content').innerHTML=renderObraDetail(pid);
 }
 
 function renderObraDetail(pid){
   const p=DATA.projects.find(pr=>pr.id===pid); if(!p) return renderObras();
-  const tareas=DATA.tasks.filter(t=>t.project===pid);
-  const completadas=tareas.filter(t=>t.status==='completado').length;
-  const avanceTareas=tareas.length>0?Math.round((completadas/tareas.length)*100):p.progress;
-  const bit=DATA.bitacora.filter(b=>b.project===pid);
   const isAdm=currentMode==='adm';
+  const tabs=[
+    {id:'financiero',label:'Resumen Financiero',icon:'ti-report-money',admOnly:true},
+    {id:'bitacora',label:'Bitácora',icon:'ti-notebook',admOnly:false},
+    {id:'personal',label:'Personal',icon:'ti-users',admOnly:false},
+    {id:'caja',label:'Flujo de Caja',icon:'ti-cash',admOnly:true},
+  ].filter(t=>!t.admOnly||isAdm);
+  if(!tabs.find(t=>t.id===currentObraTab)) currentObraTab=tabs[0].id;
+
   return `
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
     <button class="btn-ghost" onclick="switchView('obras')" style="font-size:11px;padding:5px 10px"><i class="ti ti-arrow-left"></i> Obras</button>
@@ -981,41 +1008,184 @@ function renderObraDetail(pid){
     <span class="estado-badge e-${p.status}">${p.status}</span>
     <button class="btn-primary" style="margin-left:auto;font-size:11px;padding:5px 11px" onclick="openModal('bitacora_entry','${pid}')"><i class="ti ti-plus"></i> Bitácora</button>
   </div>
-  <div class="metrics col4" style="margin-bottom:12px">
-    <div class="metric"><div class="metric-label">Avance por tareas</div><div class="metric-value accent num">${avanceTareas}%</div><div class="prog-bar"><div class="prog-fill" style="width:${avanceTareas}%;background:var(--orange)"></div></div><div style="font-size:10px;color:var(--gray-400);margin-top:3px">${completadas}/${tareas.length} tareas</div></div>
-    <div class="metric"><div class="metric-label">Responsable</div><div class="metric-value" style="font-size:14px">${p.responsible||'—'}</div></div>
-    <div class="metric"><div class="metric-label">Tipo</div><div class="metric-value" style="font-size:14px">${p.type||'—'}</div></div>
-    <div class="metric"><div class="metric-label">Plazo</div><div class="metric-value" style="font-size:14px">${p.deadline||'—'}</div></div>
+  <div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--gray-200);flex-wrap:wrap">
+    ${tabs.map(t=>`<div id="otab-${t.id}" onclick="switchObraTab('${pid}','${t.id}')"
+      style="padding:9px 15px;cursor:pointer;font-family:var(--fd);font-size:12px;font-weight:700;
+      color:${currentObraTab===t.id?'var(--orange)':'var(--gray-500)'};
+      border-bottom:2px solid ${currentObraTab===t.id?'var(--orange)':'transparent'};transition:all .15s">
+      <i class="ti ${t.icon}" style="margin-right:4px;font-size:13px"></i>${t.label}</div>`).join('')}
   </div>
-  ${isAdm?`<div class="metrics col2" style="margin-bottom:12px">
-    <div class="metric"><div class="metric-label">Presupuesto</div><div class="metric-value num">${$m(p.budget)}</div></div>
-    <div class="metric"><div class="metric-label">Gastos ejecutados</div><div class="metric-value num" style="color:var(--red)">${$m(DATA.expenses.filter(g=>g.project===pid&&g.tipo==='gasto').reduce((s,g)=>s+g.total,0))}</div></div>
-  </div>`:''}
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Tareas (${tareas.length})</span>
-      <button class="btn-primary" style="font-size:11px;padding:4px 10px" onclick="openModal('task')">+ Tarea</button></div>
-      ${tareas.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin tareas.</p>':
-      `<table><thead><tr><th>Tarea</th><th>Responsable</th><th>Vence</th><th>Estado</th></tr></thead>
-      <tbody>${tareas.map(t=>`<tr>
-        <td style="font-weight:500${t.status==='completado'?';text-decoration:line-through;color:var(--gray-400)':''}">${t.name}</td>
-        <td>${t.responsible||''}</td><td>${t.due||'—'}</td>
-        <td><span class="estado-badge e-${t.status}">${t.status}</span></td>
-      </tr>`).join('')}</tbody></table>`}
+  <div id="obra-tab-content">${renderObraTabContent(pid,currentObraTab)}</div>`;
+}
+
+function switchObraTab(pid,tab){
+  currentObraTab=tab;
+  document.getElementById('main-content').innerHTML=renderObraDetail(pid);
+}
+
+function renderObraTabContent(pid,tab){
+  switch(tab){
+    case 'financiero': return renderObraFinanciero(pid);
+    case 'bitacora':   return renderObraBitacoraTab(pid);
+    case 'personal':   return renderObraPersonalTab(pid);
+    case 'caja':       return renderObraCajaTab(pid);
+    default: return '';
+  }
+}
+function renderObraFinanciero(pid){
+  const p=DATA.projects.find(pr=>pr.id===pid); if(!p) return '';
+  const f=getFinancialSummary(p);
+  const tareas=DATA.tasks.filter(t=>t.project===pid);
+  const completadas=tareas.filter(t=>t.status==='completado').length;
+  const avanceTareas=tareas.length>0?Math.round((completadas/tareas.length)*100):p.progress;
+
+  return `
+  <div class="metrics col4" style="margin-bottom:12px">
+    <div class="metric">
+      <div class="metric-label">Presupuesto contractual</div>
+      <div class="metric-value num">${$m(f.budget)}</div>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Bitácora</span><span class="card-action" onclick="switchView('bitacora')">Ver completa →</span></div>
-      ${bit.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin entradas de bitácora.</p>':
-      bit.slice(0,3).map(b=>`<div class="bitacora-entry">
-        <div class="bitacora-photo">${b.photo_url?`<img src="${b.photo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo\\' style=\\'color:var(--gray-300);font-size:22px\\'></i>'">`:'<i class="ti ti-photo" style="color:var(--gray-300);font-size:22px"></i>'}</div>
-        <div style="flex:1"><div style="font-weight:700;font-size:12px;color:var(--navy)">${b.title||''}</div>
-        <div style="font-size:11px;color:var(--orange);margin-top:2px">${b.entry_date||''}</div>
-        <div style="font-size:11px;color:var(--gray-700);margin-top:4px">${(b.description||'').slice(0,100)}${(b.description||'').length>100?'…':''}</div></div>
-      </div>`).join('')}
+    <div class="metric">
+      <div class="metric-label">Facturado / Cobrado</div>
+      <div class="metric-value num" style="color:var(--green)">${$m(f.ingresos)}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(f.progresoFinanciero,100)}%;background:var(--green)"></div></div>
+      <div class="metric-change up">${f.progresoFinanciero}% cobrado</div>
     </div>
+    <div class="metric">
+      <div class="metric-label">Por cobrar (${f.aplicaRet?'neto':'bruto'})</div>
+      <div class="metric-value num" style="color:var(--amber)">${$m(f.aplicaRet?f.porCobrarNeto:f.porCobrarBruto)}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Gastos ejecutados</div>
+      <div class="metric-value num" style="color:${f.desviacion>=0?'var(--navy)':'var(--red)'}">${$m(f.gastos)}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(f.pctEjecutado,100)}%;background:${f.pctEjecutado>90?'var(--red)':'var(--orange)'}"></div></div>
+      <div class="metric-change ${f.desviacion>=0?'up':'down'}">${f.pctEjecutado}% ejecutado</div>
+    </div>
+  </div>
+
+  ${f.aplicaRet?`
+  <div class="card">
+    <div class="card-header"><span class="card-title">Desglose de retenciones / garantías</span></div>
+    <div class="grid3">
+      <div><div class="metric-label">Retención (${p.retencion_pct||0}%)</div><div class="num" style="font-size:16px;color:var(--red)">-${$m(f.retMonto)}</div></div>
+      <div><div class="metric-label">Fondo de garantía (${p.garantia_pct||0}%)</div><div class="num" style="font-size:16px;color:var(--red)">-${$m(f.garMonto)}</div></div>
+      <div><div class="metric-label">Saldo neto por cobrar</div><div class="num" style="font-size:16px;color:var(--amber);font-weight:700">${$m(f.porCobrarNeto)}</div></div>
+    </div>
+  </div>`:`
+  <div class="info-box"><i class="ti ti-info-circle"></i>
+    <p>Este proyecto muestra el saldo <strong>bruto</strong> por cobrar. Si aplica retención en la fuente o fondo de garantía, actívalo en "Editar obra".</p>
+  </div>`}
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Desviación presupuestaria (gastos vs. presupuesto)</span></div>
+    <div class="prog-bar" style="height:8px"><div class="prog-fill" style="width:${Math.min(f.pctEjecutado,100)}%;background:${f.desviacion>=0?'var(--green)':'var(--red)'}"></div></div>
+    <div style="margin-top:8px;font-size:12px;color:var(--gray-500)">
+      ${f.desviacion>=0
+        ? `<span style="color:var(--green);font-weight:700">✓ Dentro de presupuesto.</span> Saldo disponible: <span class="num">${$m(f.desviacion)}</span>`
+        : `<span style="color:var(--red);font-weight:700">⚠ Presupuesto excedido.</span> Sobregasto: <span class="num">${$m(Math.abs(f.desviacion))}</span>`}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">Tareas (${tareas.length}) — ${avanceTareas}% completado</span>
+    <button class="btn-primary" style="font-size:11px;padding:4px 10px" onclick="openModal('task')">+ Tarea</button></div>
+    ${tareas.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin tareas.</p>':
+    `<table><thead><tr><th>Tarea</th><th>Responsable</th><th>Vence</th><th>Estado</th></tr></thead>
+    <tbody>${tareas.map(t=>`<tr>
+      <td style="font-weight:500${t.status==='completado'?';text-decoration:line-through;color:var(--gray-400)':''}">${t.name}</td>
+      <td>${t.responsible||''}</td><td>${t.due||'—'}</td>
+      <td><span class="estado-badge e-${t.status}">${t.status}</span></td>
+    </tr>`).join('')}</tbody></table>`}
+  </div>`;
+}
+  function renderObraBitacoraTab(pid){
+  return `<div class="card">
+    <div class="card-header"><span class="card-title">Bitácora de la obra</span>
+    <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="openModal('bitacora_entry','${pid}')">+ Nueva entrada</button></div>
+    ${renderBitacoraList_html(pid)}
+  </div>`;
+}
+  function renderObraPersonalTab(pid){
+  const asgs = DATA.staff_assignments.filter(a=>a.project===pid);
+  const staffIds = asgs.map(a=>a.staff_id);
+  const staff = DATA.staff.filter(s=>staffIds.includes(s.id));
+  const asistencia = DATA.attendance.filter(a=>a.project===pid);
+
+  return `<div class="card">
+    <div class="card-header"><span class="card-title">Personal asignado (${staff.length})</span></div>
+    ${staff.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin personal asignado a esta obra.</p>':
+    `<div class="grid3">${staff.map(p=>{
+      const a=asgs.find(x=>x.staff_id===p.id);
+      const horasProy = asistencia.filter(x=>x.staff_id===p.id).reduce((s,x)=>s+(x.hours||0),0);
+      return `<div class="personal-card">
+        <div class="personal-photo">${p.initials||'??'}</div>
+        <div class="personal-name">${p.name}</div>
+        <div class="personal-role">${p.role||''}</div>
+        <div style="font-size:10.5px;color:var(--gray-400);margin-top:4px">${a?a.shift_start+'–'+a.shift_end:''}</div>
+        <div class="num" style="font-size:11px;color:var(--green);margin-top:3px">${horasProy.toFixed(1)}h registradas</div>
+        <span class="estado-badge e-${p.status==='presente'?'activo':'pendiente'}" style="margin-top:5px">${p.status}</span>
+      </div>`;}).join('')}</div>`}
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Asistencia registrada en esta obra</span></div>
+    ${asistencia.length===0?'<p style="color:var(--gray-400);font-size:12px">Sin registros de asistencia.</p>':renderAttTableHtml(pid)}
+  </div>`;
+}
+  function renderObraCajaTab(pid){
+  const cats=[...new Set(DATA.expenses.filter(e=>e.project===pid).map(e=>e.category).filter(Boolean))];
+  return `<div class="card">
+    <div class="filter-bar" style="margin-bottom:12px">
+      <select class="form-select" id="caja-tipo-filter" onchange="renderObraCajaTable('${pid}')">
+        <option value="">Todo</option>
+        <option value="ingreso">Solo Ingresos</option>
+        <option value="gasto">Solo Gastos</option>
+      </select>
+      <select class="form-select" id="caja-cat-filter" onchange="renderObraCajaTable('${pid}')">
+        <option value="">Todas las categorías</option>
+        ${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <button class="btn-success" style="font-size:11px;padding:5px 11px" onclick="abrirCobroEnObra('${pid}')"><i class="ti ti-plus"></i> Cobro</button>
+      <button class="btn-primary" style="font-size:11px;padding:5px 11px" onclick="abrirGastoEnObra('${pid}')"><i class="ti ti-minus"></i> Gasto</button>
+    </div>
+    <div id="caja-table-wrap">${renderObraCajaTableHtml(pid)}</div>
   </div>`;
 }
 
+function abrirCobroEnObra(pid){ openModal('ingreso'); setTimeout(()=>{ const s=document.getElementById('f-gproj'); if(s) s.value=pid; },80); }
+function abrirGastoEnObra(pid){ openModal('expense'); setTimeout(()=>{ const s=document.getElementById('f-gproj'); if(s) s.value=pid; },80); }
+
+function renderObraCajaTable(pid){
+  document.getElementById('caja-table-wrap').innerHTML=renderObraCajaTableHtml(pid);
+}
+
+function renderObraCajaTableHtml(pid){
+  const tipo=document.getElementById('caja-tipo-filter')?.value||'';
+  const cat=document.getElementById('caja-cat-filter')?.value||'';
+  let rows=DATA.expenses.filter(e=>e.project===pid);
+  if(tipo) rows=rows.filter(e=>e.tipo===tipo);
+  if(cat) rows=rows.filter(e=>e.category===cat);
+
+  // Orden cronológico descendente — lo último registrado va primero
+  rows=rows.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  if(rows.length===0) return '<p style="color:var(--gray-400);font-size:12px;padding:16px 0">Sin movimientos para este filtro.</p>';
+  const totalIng=rows.filter(r=>r.tipo==='ingreso').reduce((s,r)=>s+r.total,0);
+  const totalGas=rows.filter(r=>r.tipo==='gasto').reduce((s,r)=>s+r.total,0);
+
+  return `<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Categoría</th><th>Total</th></tr></thead>
+  <tbody>${rows.map(g=>`<tr class="${g.tipo==='ingreso'?'ingreso-row':'gasto-row'}">
+    <td class="num-cell">${g.date||'—'}</td>
+    <td><span class="estado-badge e-${g.tipo==='ingreso'?'activo':'retrasado'}" style="font-size:9px">${g.tipo==='ingreso'?'↑ Ingreso':'↓ Gasto'}</span></td>
+    <td style="font-weight:500">${g.description}</td>
+    <td>${g.category||''}</td>
+    <td class="num-cell" style="font-weight:600;color:${g.tipo==='ingreso'?'var(--green)':'var(--red)'}">${g.tipo==='ingreso'?'+':'−'}${$m(g.total)}</td>
+  </tr>`).join('')}</tbody>
+  <tfoot><tr>
+    <td colspan="4" style="font-weight:700;font-family:var(--fd);padding:10px 9px">Saldo neto del periodo mostrado</td>
+    <td class="num-cell" style="font-weight:700;font-size:14px;color:${totalIng-totalGas>=0?'var(--green)':'var(--red)'}">${$m(totalIng-totalGas)}</td>
+  </tr></tfoot></table>`;
+}
+  
 // ── CRONOGRAMA: Auto-generado desde tareas con fechas reales ──
 function renderCronograma(){
   const isAdm=currentMode==='adm';
