@@ -2925,12 +2925,12 @@ async function saveModal(){
       responsible:document.getElementById('f-presp').value,location:document.getElementById('f-ploc').value,
       client_id:document.getElementById('f-pclient').value||null,
       budget:parseFloat(document.getElementById('f-pbudget').value)||0,
-      deadline:document.getElementById('f-pdate').value,
+      deadline:document.getElementById('f-pdate').value||null,
       progress:parseInt(document.getElementById('f-pprog').value)||0,
       status:document.getElementById('f-pstatus').value};
     if(isEdit) await dbUpdate('projects',editingId,updates);
     else{ const id='P'+(DATA.projects.length+1).toString().padStart(3,'0'); await dbInsert('projects',{id,...updates}); }
-
+    
   } else if(t==='task'){
     const updates={name:document.getElementById('f-tname').value,project:document.getElementById('f-tproj').value,
       responsible:document.getElementById('f-tresp').value,due:document.getElementById('f-tdate').value,
